@@ -1,0 +1,9 @@
+language: ruby
+rvm:
+  - 2.5
+install:
+  - gem install bundler
+  - bundle install
+script:
+  - rubocop
+  - rspec
