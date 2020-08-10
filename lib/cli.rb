@@ -9,7 +9,7 @@ require_relative './adapters/session_adapter.rb'
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize
   def run
     program :name, 'ccli - cryptopus ccli'
     program :version, '0.1.0'
@@ -17,7 +17,7 @@ class CLI
 
     command :login do |c|
       c.syntax = 'ccli login <url> [options]'
-      c.description = 'ccli login'
+      c.description = 'Logs into the ccli'
       c.option '--token TOKEN', String, 'Authentification Token including api user username'
 
       c.action do |args, options|
@@ -27,9 +27,19 @@ class CLI
       end
     end
 
+    command :logout do |c|
+      c.syntax = 'ccli logout'
+      c.description = 'Logs out of the ccli'
+
+      c.action do
+        SessionAdapter.instance.clear_session
+        puts 'Successfully logged out'
+      end
+    end
+
     run!
   end
-  # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize
 end
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
