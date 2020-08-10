@@ -26,6 +26,9 @@ class SessionAdapter
   end
 
   def clear_session
+    return unless ccli_directory_exists?
+
+    FileUtils.rm_r(ccli_directory_path)
   end
 
   def folder_selected?
