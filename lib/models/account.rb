@@ -1,11 +1,18 @@
 # frozen_string_literal: true
 
+require_relative '../errors'
+require_relative '../adapters/session_adapter'
+require_relative '../serializers/account_serializer'
+
 class Account
-  def initialize(id, accountname, password, type)
+  attr_reader :id, :accountname, :username, :password, :category
+
+  def initialize(id, accountname, username, password, category)
     @id = id
     @accountname = accountname
+    @username = username
     @password = password
-    @type = type
+    @category = category
   end
 
   def to_json(*_args)
@@ -20,5 +27,6 @@ class Account
   end
 
   def self.find(id)
+    AccountSerializer.from_json(CryAdapter.new.get('accounts', id))
   end
 end

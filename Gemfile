@@ -7,6 +7,5 @@ gem 'rspec', '~> 3.9'
 gem 'rubocop', '~> 0.89.0'
 gem 'tty-exit'
 
-group :development do
-  gem 'pry'
-end
+gem 'pry'
+gem 'pry-byebug'
