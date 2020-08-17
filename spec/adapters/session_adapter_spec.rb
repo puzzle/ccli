@@ -5,15 +5,14 @@ require 'base64'
 require 'fileutils'
 require 'psych'
 
-require_relative '../../lib/adapters/session_adapter'
-
 describe SessionAdapter do
-  subject { described_class.instance }
-    let (:spec_session_path) { 'spec/tmp/.ccli/session' }
+  subject { described_class.new }
+  let (:spec_session_path) { 'spec/tmp/.ccli/session' }
 
-    before(:each) do
-      stub_const("SessionAdapter::FILE_LOCATION", spec_session_path)
-    end
+  before(:each) do
+    stub_const("SessionAdapter::FILE_LOCATION", spec_session_path)
+  end
+
   context 'update session' do
     after(:each) do
       FileUtils.rm_r(File.expand_path('spec/tmp'))

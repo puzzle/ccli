@@ -4,9 +4,9 @@ require 'base64'
 require 'singleton'
 require 'yaml'
 require 'fileutils'
+require 'psych'
 
 class SessionAdapter
-  include Singleton
 
   FILE_LOCATION = '~/.ccli/session'
 
@@ -23,6 +23,9 @@ class SessionAdapter
   end
 
   def session_data
+    raise SessionMissingError unless session_file_exists?
+
+    @session_data ||= Psych.load_file(session_file_path)
   end
 
   def clear_session

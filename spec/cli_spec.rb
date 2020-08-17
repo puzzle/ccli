@@ -9,7 +9,7 @@ describe CLI do
   context 'login' do
     it 'exits with usage error if url missing' do
       expect{system('ruby ./lib/cli.rb login')}
-        .to output(/usage error/)
+        .to output(/URL missing/)
         .to_stderr_from_any_process
     end
 

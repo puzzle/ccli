@@ -29,7 +29,7 @@ Metrics/MethodLength:
   Severity: error
 
 Metrics/ParameterLists:
-  Max: 4
+  Max: 5
   Severity: warning
 
 Layout/ClassStructure:
