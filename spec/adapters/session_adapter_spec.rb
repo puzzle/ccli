@@ -23,7 +23,7 @@ describe SessionAdapter do
 
       encoded_token = Base64.encode64('bob;1234')
 
-      subject.update_session(encoded_token, 'https://cryptopus.specs.com')
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
 
       expect(File.exist?(File.expand_path(spec_session_path))).to be(true)
 
@@ -37,17 +37,40 @@ describe SessionAdapter do
     it 'overwrites existing session' do
       encoded_token_old = Base64.encode64('bob;1234')
 
-      subject.update_session(encoded_token_old, 'https://old.host.com')
+      subject.update_session({ encoded_token: encoded_token_old, url: 'https://old.host.com' })
 
       encoded_token_new = Base64.encode64('carl;56789')
 
-      subject.update_session(encoded_token_new, 'https://new.host.com')
+      subject.update_session({ encoded_token: encoded_token_new, url: 'https://new.host.com' })
 
       file_data = Psych.load_file(File.expand_path(SessionAdapter::FILE_LOCATION))
 
       expect(file_data[:url]).to eq('https://new.host.com')
       expect(file_data[:username]).to eq('carl')
       expect(file_data[:token]).to eq('56789')
+    end
+
+    it 'selects folder' do
+      subject.update_session({ folder: 2})
+
+      file_data = Psych.load_file(File.expand_path(SessionAdapter::FILE_LOCATION))
+
+      expect(file_data[:folder]).to eq(2)
+    end
+
+    it 'selects folder after setting session' do
+      encoded_token = Base64.encode64('bob;1234')
+
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+
+      subject.update_session({ folder: 2})
+
+      file_data = Psych.load_file(File.expand_path(SessionAdapter::FILE_LOCATION))
+
+      expect(file_data[:folder]).to eq(2)
+      expect(file_data[:url]).to eq('https://cryptopus.specs.com')
+      expect(file_data[:username]).to eq('bob')
+      expect(file_data[:token]).to eq('1234')
     end
   end
 
@@ -57,7 +80,7 @@ describe SessionAdapter do
 
       encoded_token = Base64.encode64('bob;1234')
 
-      subject.update_session(encoded_token, 'https://cryptopus.specs.com')
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
 
       expect(File.exist?(File.expand_path(spec_session_path))).to be(true)
 
