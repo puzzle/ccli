@@ -10,16 +10,15 @@ class SessionAdapter
 
   FILE_LOCATION = '~/.ccli/session'
 
-  def update_session(token, url)
+  def update_session(session)
+    session.merge!(session_data) { |_key, input| input } if session_file_exists?
+
     FileUtils.mkdir_p ccli_directory_path unless ccli_directory_exists?
     File.open(session_file_path, 'w') do |file|
-      config = extracted_token(token)
-      config[:url] = url
-      file.write config.to_yaml
+      session.merge!(extracted_token(session[:encoded_token])) { |_key, _v1, v2| v2 }
+      session.delete(:encoded_token)
+      file.write session.to_yaml
     end
-  end
-
-  def update_folder(id)
   end
 
   def session_data

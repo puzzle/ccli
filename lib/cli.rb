@@ -11,7 +11,7 @@ require_relative './models/account'
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
   def run
     program :name, 'ccli - cryptopus ccli'
     program :version, '0.1.0'
@@ -24,7 +24,7 @@ class CLI
 
       c.action do |args, options|
         TTY::Exit.exit_with(:usage_error, 'URL missing') if args.empty?
-        SessionAdapter.new.update_session(options.token, args.first)
+        SessionAdapter.new.update_session({ encoded_token: options.token, url: args.first })
         puts 'Successfully logged in'
       end
     end
@@ -46,7 +46,7 @@ class CLI
       c.option '--password', String, 'Only show the password of the user'
 
       c.action do |args, options|
-        TTY::Exit.exit_with(:usage_error, 'ID missing') if args.empty?
+        TTY::Exit.exit_with(:usage_error, 'id missing') if args.empty?
         begin
           account = Account.find(args.first)
         rescue SessionMissingError
@@ -62,9 +62,23 @@ class CLI
       end
     end
 
+    command :folder do |c|
+      c.syntax = 'ccli folder <id>'
+      c.description = 'Selects the current cryptopus folder'
+
+      c.action do |args|
+        id = args.first
+        TTY::Exit.exit_with(:usage_error, 'id missing') unless id
+        TTY::Exit.exit_with(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
+        SessionAdapter.new.update_session({ folder: id })
+
+        puts "Selected Folder with id: #{id}"
+      end
+    end
+
     run!
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
 end
 
 CLI.new.run if $PROGRAM_NAME == __FILE__

@@ -22,7 +22,7 @@ describe CryAdapter do
     it 'returns account hash from http response' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session(encoded_token, 'https://cryptopus.specs.com')
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com'})
 
       response = double
       json_response = {
@@ -57,7 +57,7 @@ describe CryAdapter do
     it 'raises error if unauthorized' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session(encoded_token, 'https://cryptopus.specs.com')
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
 
       response = double
 
@@ -74,7 +74,7 @@ describe CryAdapter do
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session(encoded_token, 'https://cryptopus.specs.com')
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
 
       expect do
         subject.get('accounts', 3)
