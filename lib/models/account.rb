@@ -6,8 +6,9 @@ require_relative '../serializers/account_serializer'
 
 class Account
   attr_reader :id, :accountname, :username, :password, :category
+  attr_accessor :folder
 
-  def initialize(id, accountname, username, password, category)
+  def initialize(accountname, username, password, category, id: nil)
     @id = id
     @accountname = accountname
     @username = username
@@ -26,7 +27,13 @@ class Account
   def to_osesecret
   end
 
-  def self.find(id)
-    AccountSerializer.from_json(CryAdapter.new.get('accounts', id))
+  class << self
+    def find(id)
+      AccountSerializer.from_json(CryAdapter.new.get("accounts/#{id}"))
+    end
+
+    def from_json(json)
+      AccountSerializer.from_json(json)
+    end
   end
 end

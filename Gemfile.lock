@@ -7,11 +7,15 @@ GEM
     commander (4.5.2)
       highline (~> 2.0.0)
     diff-lcs (1.4.4)
+    equatable (0.6.1)
     highline (2.0.3)
     method_source (1.0.0)
     parallel (1.19.2)
     parser (2.7.1.4)
       ast (~> 2.4.1)
+    pastel (0.7.4)
+      equatable (~> 0.6)
+      tty-color (~> 0.5)
     pry (0.13.1)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -46,6 +50,9 @@ GEM
     rubocop-ast (0.3.0)
       parser (>= 2.7.1.4)
     ruby-progressbar (1.10.1)
+    tty-color (0.5.2)
+    tty-command (0.9.0)
+      pastel (~> 0.7.0)
     tty-exit (0.1.0)
     unicode-display_width (1.7.0)
 
@@ -58,6 +65,7 @@ DEPENDENCIES
   pry-byebug
   rspec (~> 3.9)
   rubocop (~> 0.89.0)
+  tty-command
   tty-exit
 
 BUNDLED WITH

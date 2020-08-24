@@ -1,12 +1,18 @@
 # frozen_string_literal: true
 
+require_relative '../adapters/ose_adapter'
+require_relative '../serializers/ose_secret_serializer'
+
 class OSESecret
-  def initialize(name, token)
+  attr_reader :name, :data
+
+  def initialize(name, data)
     @name = name
-    @token = token
+    @data = data
   end
 
   def to_account
+    OSESecretSerializer.to_account(self)
   end
 
   def to_yaml
@@ -14,10 +20,12 @@ class OSESecret
   end
 
   class << self
-    def retrieve(name)
+    def find_by_name(name)
+      OSESecretSerializer.from_yaml(OSEAdapter.new.fetch_secret(name))
     end
 
-    def retrieve_all
+    def all
+      OSEAdapter.new.fetch_all_secrets.map { |s| OSESecretSerializer.from_yaml(s) }
     end
 
     def from_account(account)
