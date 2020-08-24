@@ -6,7 +6,9 @@ require 'tty-exit'
 
 require_relative './adapters/session_adapter'
 require_relative './adapters/cry_adapter'
+require_relative './adapters/ose_adapter'
 require_relative './models/account'
+require_relative './models/ose_secret'
 
 class CLI
   include Commander::Methods
@@ -73,6 +75,34 @@ class CLI
         SessionAdapter.new.update_session({ folder: id })
 
         puts "Selected Folder with id: #{id}"
+      end
+    end
+
+    command :'ose secret pull' do |c|
+      c.syntax = 'ccli ose secret pull <secret-name>'
+      c.description = 'Selects the current cryptopus folder'
+
+      c.action do |args|
+        begin
+          if args.empty?
+            CryAdapter.new.save_secrets(OSESecret.all)
+            puts 'Saved secrets of current project'
+          elsif args.length == 1
+            CryAdapter.new.save_secrets([OSESecret.find_by_name(args.first)])
+            puts "Saved secret #{args.first}"
+          else
+            TTY::Exit.exit_with(:usage_error, 'Only a single or no argument are allowed')
+          end
+        rescue NoFolderSelectedError
+          TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
+        rescue OpenshiftClientMissingError
+          TTY::Exit.exit_with(:usage_error, 'oc is not installed')
+        rescue OpenshiftClientNotLoggedInError
+          TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
+        rescue OpenshiftSecretNotFoundError
+          TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                              "#{args.first} was not found")
+        end
       end
     end
 

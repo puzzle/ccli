@@ -33,7 +33,10 @@ class SessionAdapter
     FileUtils.rm_r(ccli_directory_path)
   end
 
-  def folder_selected?
+  def selected_folder_id
+    raise NoFolderSelectedError if session_data[:folder].nil?
+
+    @selected_folder_id ||= session_data[:folder]
   end
 
   private

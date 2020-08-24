@@ -5,8 +5,30 @@ require 'yaml'
 
 class AccountSerializer
   class << self
+    # rubocop:disable Metrics/MethodLength
     def to_json(account)
+      {
+        data: {
+          type: 'accounts',
+          id: account.id,
+          attributes: {
+            accountname: account.accountname,
+            category: account.category,
+            cleartext_username: account.username,
+            cleartext_password: account.password
+          },
+          relationships: {
+            folder: {
+              data: {
+                id: account.folder,
+                type: 'folders'
+              }
+            }
+          }
+        }
+      }.compact.to_json
     end
+    # rubocop:enable Metrics/MethodLength
 
     def to_yaml(account)
       { 'id' => account.id,
@@ -17,13 +39,13 @@ class AccountSerializer
     end
 
     def from_json(json)
-      data = json['data']
-      attributes = data['attributes']
-      Account.new(data['id'],
-                  attributes['accountname'],
-                  attributes['cleartext_username'],
-                  attributes['cleartext_password'],
-                  attributes['category'])
+      data = json[:data] || json
+      attributes = data[:attributes]
+      Account.new(attributes[:accountname],
+                  attributes[:cleartext_username],
+                  attributes[:cleartext_password],
+                  attributes[:category],
+                  id: data[:id])
     end
   end
 end
