@@ -13,11 +13,11 @@ require_relative './models/ose_secret'
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'ccli - cryptopus ccli'
     program :version, '0.1.0'
-    program :description, 'CLI tool to manage openshift secrets'
+    program :description, 'CLI tool to manage Openshift Secrets'
 
     command :login do |c|
       c.syntax = 'ccli login <url> [options]'
@@ -66,7 +66,7 @@ class CLI
 
     command :folder do |c|
       c.syntax = 'ccli folder <id>'
-      c.description = 'Selects the current cryptopus folder'
+      c.description = 'Selects the current Cryptopus folder'
 
       c.action do |args|
         id = args.first
@@ -80,7 +80,11 @@ class CLI
 
     command :'ose secret pull' do |c|
       c.syntax = 'ccli ose secret pull <secret-name>'
-      c.description = 'Selects the current cryptopus folder'
+      c.summary = 'Pull secret from Openshift to Cryptopus'
+      c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
+                      'If a Cryptopus Account in the selected folder using the name ' \
+                      "of the given secret is already present, it will be updated accordingly.\n" \
+                      'If no name is given, it will pull all secrets inside the selected project.'
 
       c.action do |args|
         begin
@@ -108,11 +112,15 @@ class CLI
 
     command :'ose secret push' do |c|
       c.syntax = 'ccli ose secret push <secret-name>'
-      c.description = 'Selects the current cryptopus folder'
+      c.summary = 'Push secret from Cryptopus to Openshift'
+      c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
+                      'If a Secret in the selected Openshift project using the name ' \
+                      'of the given accountname is already present, it will be updated accordingly.'
 
       c.action do |args|
         secret_name = args.first
-        TTY::Exit.exit_with(:usage_error, 'secret name is missing') unless secret_name
+        TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
+        TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
         begin
           secret = CryAdapter.new.find_secret_account_by_name(secret_name)
           OSEAdapter.new.insert_secret(Account.from_json(secret).to_osesecret)
@@ -132,7 +140,7 @@ class CLI
 
     run!
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
 end
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
