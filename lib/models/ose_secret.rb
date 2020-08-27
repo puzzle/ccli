@@ -29,6 +29,7 @@ class OSESecret
     end
 
     def from_account(account)
+      OSESecret.from_json(account)
     end
   end
 end

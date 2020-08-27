@@ -317,4 +317,22 @@ describe CryAdapter do
       end.to raise_error(NoFolderSelectedError)
     end
   end
+
+  context 'find_secret_account_by_name' do
+    it 'gets show for secret account' do
+      expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+
+      expect(subject).to receive(:get).with('accounts/1').exactly(:once)
+
+      subject.find_secret_account_by_name('spec_secret')
+    end
+
+    it 'raises error if account was not found' do
+      expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+
+      expect do
+        subject.find_secret_account_by_name('unavailable_secret')
+      end.to raise_error(CryptopusAccountNotFoundError)
+    end
+  end
 end

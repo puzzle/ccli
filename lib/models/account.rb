@@ -25,6 +25,7 @@ class Account
   end
 
   def to_osesecret
+    AccountSerializer.to_osesecret(self)
   end
 
   class << self

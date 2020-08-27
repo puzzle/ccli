@@ -1,14 +1,13 @@
 # frozen_string_literal: true
 
 require_relative '../models/ose_secret'
+require 'psych'
 
 class OSESecretSerializer
   class << self
     def from_yaml(yaml)
-      OSESecret.new(yaml.dig(:metadata, :name), yaml.to_s)
-    end
-
-    def to_yaml(secret)
+      secret_hash = Psych.load(yaml, symbolize_names: true)
+      OSESecret.new(secret_hash.dig(:metadata, :name), yaml)
     end
 
     def to_account(secret)
