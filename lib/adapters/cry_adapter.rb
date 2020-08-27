@@ -36,7 +36,7 @@ class CryAdapter
       secret_account = secret.to_account
       secret_account.folder = session_adapter.selected_folder_id
 
-      persisted_secret = persisted_secret_account(secret)
+      persisted_secret = persisted_secret_account(secret.name)
       if persisted_secret
         patch("accounts/#{persisted_secret.id}", secret_account.to_json)
       else
@@ -45,11 +45,19 @@ class CryAdapter
     end
   end
 
+  def find_secret_account_by_name(name)
+    secret_account = persisted_secret_account(name)
+
+    raise CryptopusAccountNotFoundError unless secret_account
+
+    get("accounts/#{secret_account.id}")
+  end
+
   private
 
-  def persisted_secret_account(secret)
+  def persisted_secret_account(secret_name)
     folder_accounts.select do |a|
-      a.accountname == secret.name
+      a.accountname == secret_name
     end.first
   end
 

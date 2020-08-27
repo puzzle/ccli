@@ -9,7 +9,7 @@ class OSEAdapter
 
     begin
       out, _err = cmd.run("oc get -o yaml secret #{name}")
-      Psych.load(out, symbolize_names: true)
+      out
     rescue TTY::Command::ExitError
       raise OpenshiftSecretNotFoundError
     end
@@ -25,7 +25,16 @@ class OSEAdapter
     end
   end
 
-  def insert_secret(yaml)
+  def insert_secret(secret)
+    raise OpenshiftClientMissingError unless oc_installed?
+    raise OpenshiftClientNotLoggedInError unless oc_logged_in?
+
+    File.open("/tmp/#{secret.name}.yml", 'w') do |file|
+      file.write secret.data
+    end
+
+    cmd.run("oc delete -f /tmp/#{secret.name}.yml --ignore-not-found=true")
+    cmd.run("oc create -f /tmp/#{secret.name}.yml")
   end
 
   private

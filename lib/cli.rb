@@ -106,6 +106,30 @@ class CLI
       end
     end
 
+    command :'ose secret push' do |c|
+      c.syntax = 'ccli ose secret push <secret-name>'
+      c.description = 'Selects the current cryptopus folder'
+
+      c.action do |args|
+        secret_name = args.first
+        TTY::Exit.exit_with(:usage_error, 'secret name is missing') unless secret_name
+        begin
+          secret = CryAdapter.new.find_secret_account_by_name(secret_name)
+          OSEAdapter.new.insert_secret(Account.from_json(secret).to_osesecret)
+          puts 'Secret was successfully applied'
+        rescue NoFolderSelectedError
+          TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
+        rescue OpenshiftClientMissingError
+          TTY::Exit.exit_with(:usage_error, 'oc is not installed')
+        rescue OpenshiftClientNotLoggedInError
+          TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
+        rescue CryptopusAccountNotFoundError
+          TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                              "#{args.first} was not found")
+        end
+      end
+    end
+
     run!
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity

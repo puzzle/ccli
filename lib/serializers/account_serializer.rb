@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require_relative '../models/account'
+require_relative '../models/ose_secret'
 require 'yaml'
 
 class AccountSerializer
@@ -46,6 +47,10 @@ class AccountSerializer
                   attributes[:cleartext_password],
                   attributes[:category],
                   id: data[:id])
+    end
+
+    def to_osesecret(account)
+      OSESecret.new(account.accountname, account.password)
     end
   end
 end

@@ -20,3 +20,6 @@ end
 
 class NoFolderSelectedError < Error
 end
+
+class CryptopusAccountNotFoundError < Error
+end
