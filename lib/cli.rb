@@ -16,12 +16,14 @@ class CLI
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'ccli - cryptopus ccli'
-    program :version, '0.1.0'
-    program :description, 'CLI tool to manage Openshift Secrets'
+    program :version, '1.0.0'
+    program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
+    program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
+    program :help, 'Usage', 'ccli [flags]'
 
     command :login do |c|
       c.syntax = 'ccli login <url> [options]'
-      c.description = 'Logs into the ccli'
+      c.description = 'Logs in to the ccli'
       c.option '--token TOKEN', String, 'Authentification Token including api user username'
 
       c.action do |args, options|
@@ -66,7 +68,7 @@ class CLI
 
     command :folder do |c|
       c.syntax = 'ccli folder <id>'
-      c.description = 'Selects the current Cryptopus folder'
+      c.description = 'Selects the Cryptopus folder by id'
 
       c.action do |args|
         id = args.first
@@ -80,7 +82,7 @@ class CLI
 
     command :'ose secret pull' do |c|
       c.syntax = 'ccli ose secret pull <secret-name>'
-      c.summary = 'Pull secret from Openshift to Cryptopus'
+      c.summary = 'Pulls secret from Openshift to Cryptopus'
       c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
                       'If a Cryptopus Account in the selected folder using the name ' \
                       "of the given secret is already present, it will be updated accordingly.\n" \
@@ -112,7 +114,7 @@ class CLI
 
     command :'ose secret push' do |c|
       c.syntax = 'ccli ose secret push <secret-name>'
-      c.summary = 'Push secret from Cryptopus to Openshift'
+      c.summary = 'Pushes secret from Cryptopus to Openshift'
       c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
                       'If a Secret in the selected Openshift project using the name ' \
                       'of the given accountname is already present, it will be updated accordingly.'
