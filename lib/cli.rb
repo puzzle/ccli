@@ -74,6 +74,7 @@ class CLI
         id = args.first
         TTY::Exit.exit_with(:usage_error, 'id missing') unless id
         TTY::Exit.exit_with(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
+
         SessionAdapter.new.update_session({ folder: id })
 
         puts "Selected Folder with id: #{id}"
