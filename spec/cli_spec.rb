@@ -9,16 +9,22 @@ require_relative '../lib/cli'
 
 describe CLI do
   subject { described_class.new }
+  let(:usage_error_code) { TTY::Exit.exit_code(:usage_error) }
+  let(:secret) { OSESecret.new('spec_secret', 'data') }
 
   before(:each) do
     Commander::Runner.instance_variable_set :'@singleton', nil
+  end
+
+  after(:each) do
+    clear_session
   end
 
   context 'login' do
     it 'exits with usage error if url missing' do
       stub_const('ARGV', ['login'])
 
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error))
+      expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/URL missing/)
         .to_stderr
@@ -130,7 +136,7 @@ describe CLI do
     it 'exits with usage error if session missing' do
       stub_const('ARGV', ['account', '1'])
 
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error))
+      expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/Not logged in/)
         .to_stderr
@@ -146,7 +152,7 @@ describe CLI do
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error))
+      expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/Authorization failed/)
         .to_stderr
@@ -157,7 +163,7 @@ describe CLI do
 
       stub_const('ARGV', ['account', '1'])
 
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error))
+      expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/Could not connect/)
         .to_stderr
@@ -179,10 +185,10 @@ describe CLI do
       # Since we have to mock the Kernel.exit call to prevent the whole test suite from exiting
       # the code after the TTY::Exit.exit_with call will just continue to run, which would not happen
       # in production usage. Thus, we have to mock these other methods as well to prevent an error from raising.
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error)).exactly(2).times
+      expect(Kernel).to receive(:exit).with(usage_error_code).exactly(2).times
       allow_any_instance_of(NilClass).to receive(:match?).and_return(false)
-      session_adapter = double
-      expect(SessionAdapter).to receive(:new).and_return(session_adapter)
+      session_adapter = SessionAdapter.new
+      expect(SessionAdapter).to receive(:new).and_return(session_adapter).at_least(:once)
       expect(session_adapter).to receive(:update_session)
 
 
@@ -194,16 +200,19 @@ describe CLI do
     it 'exits with usage error if id not a integer' do
       stub_const('ARGV', ['folder', 'a'])
 
-      expect(Kernel).to receive(:exit).with(TTY::Exit.exit_code(:usage_error))
+      session_adapter = SessionAdapter.new
+      expect(SessionAdapter).to receive(:new).and_return(session_adapter).at_least(:once)
+      expect(session_adapter).to receive(:update_session)
+      expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/id invalid/)
         .to_stderr
     end
   end
 
-  context 'ose secret pull' do
+  context 'ose-secret-pull' do
     it 'exits successfully when no name given' do
-      stub_const('ARGV', ['ose secret pull'])
+      stub_const('ARGV', ['ose-secret-pull'])
 
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
@@ -214,17 +223,298 @@ describe CLI do
         .to output(/Saved secrets of current project/)
         .to_stdout
     end
+
+    it 'exits successfully when available name given' do
+      stub_const('ARGV', ['ose-secret-pull', 'spec_secret'])
+
+      cry_adapter = double
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(cry_adapter).to receive(:save_secrets)
+      expect(OSESecret).to receive(:find_by_name).with('spec_secret')
+
+      expect{ subject.run }
+        .to output(/Saved secret spec_secret/)
+        .to_stdout
+    end
+
+    it 'exits with usage error if multiple arguments are given' do
+      stub_const('ARGV', ['ose-secret-pull', 'spec_secret', 'spec_secret2'])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Only a single or no arguments are allowed/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if no folder is selected' do
+      clear_session
+      setup_session
+      stub_const('ARGV', ['ose-secret-pull'])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Folder must be selected using ccli folder <id>/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if oc is not installed' do
+      stub_const('ARGV', ['ose-secret-pull'])
+
+      ose_adapter = OSEAdapter.new
+      cmd = double
+      negative_result = double
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(ose_adapter).to receive(:cmd).and_return(cmd)
+      expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
+      expect(negative_result).to receive(:success?).and_return(false)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/oc is not installed/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if oc is not logged in' do
+      stub_const('ARGV', ['ose-secret-pull'])
+
+      ose_adapter = OSEAdapter.new
+      cmd = double
+      positive_result = double
+      negative_result = double
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
+      expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(positive_result).to receive(:success?).and_return(true)
+      expect(negative_result).to receive(:success?).and_return(false)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/oc is not logged in/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if oc secret was not found' do
+      stub_const('ARGV', ['ose-secret-pull', 'spec_secret'])
+
+      ose_adapter = OSEAdapter.new
+      cmd = double
+      positive_result = double
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(3).times
+      expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(positive_result).to receive(:success?).and_return(true).exactly(2).times
+      expect(cmd).to receive(:run).with('oc get -o yaml secret spec_secret').and_raise(exit_error('oc get secret'))
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/secret with the given name spec_secret was not found/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if not authorized' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-pull'])
+
+      response = double
+      expect(OSESecret).to receive(:all).and_return([secret])
+      expect(Net::HTTP).to receive(:start).with('cryptopus.specs.com', 443).and_return(response)
+      expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Authorization failed/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if connection failed' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-pull'])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Could not connect/)
+        .to_stderr
+    end
+  end
+
+  context 'ose-secret-push' do
+    it 'exits successfully if name is given' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      cry_adapter = double
+      ose_adapter = double
+      account = double
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(Account).to receive(:from_json).and_return(account)
+      expect(account).to receive(:to_osesecret).and_return(secret)
+      expect(cry_adapter).to receive(:find_secret_account_by_name).with('spec_secret')
+      expect(ose_adapter).to receive(:insert_secret)
+      expect { subject.run }.to output(/Secret was successfully applied/).to_stdout
+    end
+
+    it 'exits with usage error if name is missing' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-push'])
+
+      cry_adapter = double
+      ose_adapter = double
+      account = double
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(Account).to receive(:from_json).and_return(account)
+      expect(account).to receive(:to_osesecret).and_return(secret)
+      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(ose_adapter).to receive(:insert_secret)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect { subject.run }.to output(/Secret name is missing/).to_stderr
+    end
+
+    it 'exits with usage error if multiple arguments' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret1', 'spec_secret2'])
+
+      cry_adapter = double
+      ose_adapter = double
+      account = double
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(Account).to receive(:from_json).and_return(account)
+      expect(account).to receive(:to_osesecret).and_return(secret)
+      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(ose_adapter).to receive(:insert_secret)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect { subject.run }.to output(/Only one secret can be pushed/).to_stderr
+    end
+
+    it 'exits with usage error if no folder is selected' do
+      clear_session
+      setup_session
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect { subject.run }.to output(/Folder must be selected using ccli folder <id>/).to_stderr
+    end
+
+    it 'exits with usage error if not authorized' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      response = double
+      expect(Net::HTTP).to receive(:start).with('cryptopus.specs.com', 443).and_return(response)
+      expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Authorization failed/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if connection fails' do
+      setup_session
+      select_folder(1)
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect { subject.run }.to output(/Could not connect/).to_stderr
+    end
+
+    it 'exits with usage error if oc is not installed' do
+      setup_session
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      cry_adapter = double
+      ose_adapter = OSEAdapter.new
+      account = double
+      cmd = double
+      negative_result = double
+
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(Account).to receive(:from_json).and_return(account)
+      expect(account).to receive(:to_osesecret).and_return(secret)
+      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(ose_adapter).to receive(:cmd).and_return(cmd)
+      expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
+      expect(negative_result).to receive(:success?).and_return(false)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/oc is not installed/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if oc is not logged in' do
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      cry_adapter = double
+      ose_adapter = OSEAdapter.new
+      account = double
+      cmd = double
+      negative_result = double
+      positive_result = double
+
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
+      expect(Account).to receive(:from_json).and_return(account)
+      expect(account).to receive(:to_osesecret).and_return(secret)
+      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
+      expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(positive_result).to receive(:success?).and_return(true)
+      expect(negative_result).to receive(:success?).and_return(false)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/oc is not logged in/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if cryptopus account was not found' do
+      setup_session
+      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+
+      cry_adapter = CryAdapter.new
+
+      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(cry_adapter).to receive(:persisted_secret_account).with('spec_secret')
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/secret with the given name spec_secret was not found/)
+        .to_stderr
+    end
   end
 
   private
 
   def setup_session
-    encoded_token = Base64.encode64('bob;1234')
-    stub_const('ARGV', ['login', 'https://cryptopus.specs.com', "--token=#{encoded_token}"])
     stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
 
-    subject.run
+    SessionAdapter.new.update_session( { token:  '1234', username: 'bob', url: 'https://cryptopus.specs.com' } )
+  end
 
-    Commander::Runner.instance_variable_set :'@singleton', nil
+  def select_folder(id)
+    stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
+
+    SessionAdapter.new.update_session({ folder:  id })
+  end
+
+  def clear_session
+    stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
+
+    SessionAdapter.new.clear_session
   end
 end
