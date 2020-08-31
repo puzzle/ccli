@@ -81,7 +81,7 @@ class CLI
       end
     end
 
-    command :'ose secret pull' do |c|
+    command :'ose-secret-pull' do |c|
       c.syntax = 'ccli ose secret pull <secret-name>'
       c.summary = 'Pulls secret from Openshift to Cryptopus'
       c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
@@ -98,8 +98,12 @@ class CLI
             CryAdapter.new.save_secrets([OSESecret.find_by_name(args.first)])
             puts "Saved secret #{args.first}"
           else
-            TTY::Exit.exit_with(:usage_error, 'Only a single or no argument are allowed')
+            TTY::Exit.exit_with(:usage_error, 'Only a single or no arguments are allowed')
           end
+        rescue UnauthorizedError
+          TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+        rescue SocketError
+          TTY::Exit.exit_with(:usage_error, 'Could not connect')
         rescue NoFolderSelectedError
           TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
         rescue OpenshiftClientMissingError
@@ -113,7 +117,7 @@ class CLI
       end
     end
 
-    command :'ose secret push' do |c|
+    command :'ose-secret-push' do |c|
       c.syntax = 'ccli ose secret push <secret-name>'
       c.summary = 'Pushes secret from Cryptopus to Openshift'
       c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
@@ -128,6 +132,10 @@ class CLI
           secret = CryAdapter.new.find_secret_account_by_name(secret_name)
           OSEAdapter.new.insert_secret(Account.from_json(secret).to_osesecret)
           puts 'Secret was successfully applied'
+        rescue UnauthorizedError
+          TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+        rescue SocketError
+          TTY::Exit.exit_with(:usage_error, 'Could not connect')
         rescue NoFolderSelectedError
           TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
         rescue OpenshiftClientMissingError
