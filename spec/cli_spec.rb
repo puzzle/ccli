@@ -11,6 +11,7 @@ describe CLI do
   subject { described_class.new }
   let(:usage_error_code) { TTY::Exit.exit_code(:usage_error) }
   let(:secret) { OSESecret.new('spec_secret', 'data') }
+  let(:session_adapter) { SessionAdapter.new }
 
   before(:each) do
     Commander::Runner.instance_variable_set :'@singleton', nil
@@ -22,7 +23,7 @@ describe CLI do
 
   context 'login' do
     it 'exits with usage error if url missing' do
-      stub_const('ARGV', ['login'])
+      set_command(:login)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -31,7 +32,7 @@ describe CLI do
     end
 
     it 'exits successfully when url given' do
-      stub_const('ARGV', ['login', 'https://cryptopus.specs.com'])
+      set_command(:login, 'https://cryptopus.specs.com')
       stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session' )
 
       expect{ subject.run }
@@ -44,7 +45,7 @@ describe CLI do
     it 'exits successfully when session data present' do
       setup_session
 
-      stub_const('ARGV', ['logout'])
+      set_command(:logout)
 
       expect{ subject.run }
         .to output(/Successfully logged out/)
@@ -52,7 +53,7 @@ describe CLI do
     end
 
     it 'exits successfully when no session data present' do
-      stub_const('ARGV', ['logout'])
+      set_command(:logout)
 
       expect{ subject.run }
         .to output(/Successfully logged out/)
@@ -64,7 +65,7 @@ describe CLI do
     it 'exits successfully and showing the whole account when no flag is set' do
       setup_session
 
-      stub_const('ARGV', ['account', '1'])
+      set_command(:account, '1')
       json_response = {
         data: {
           id: 1,
@@ -88,7 +89,7 @@ describe CLI do
     it 'exits successfully and showing only username with flag' do
       setup_session
 
-      stub_const('ARGV', ['account', '1', '--username'])
+      set_command(:account, '1', '--username')
       json_response = {
         data: {
           id: 1,
@@ -112,7 +113,7 @@ describe CLI do
     it 'exits successfully and showing only password with flag' do
       setup_session
 
-      stub_const('ARGV', ['account', '1', '--password'])
+      set_command(:account, '1', '--password')
       json_response = {
         data: {
           id: 1,
@@ -134,7 +135,7 @@ describe CLI do
     end
 
     it 'exits with usage error if session missing' do
-      stub_const('ARGV', ['account', '1'])
+      set_command(:account, '1')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -145,7 +146,7 @@ describe CLI do
     it 'exits with usage error if authorization fails' do
       setup_session
 
-      stub_const('ARGV', ['account', '1'])
+      set_command(:account, '1')
       response = double
       expect(Net::HTTP).to receive(:start)
                        .with('cryptopus.specs.com', 443)
@@ -161,7 +162,7 @@ describe CLI do
     it 'exits with usage error connection fails' do
       setup_session
 
-      stub_const('ARGV', ['account', '1'])
+      set_command(:account, '1')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -172,7 +173,7 @@ describe CLI do
 
   context 'folder' do
     it 'exits successfully when id given' do
-      stub_const('ARGV', ['folder', '1'])
+      set_command(:folder, '1')
 
       expect{ subject.run }
         .to output(/Selected Folder with id: 1/)
@@ -180,14 +181,13 @@ describe CLI do
     end
 
     it 'exits with usage error if id missing' do
-      stub_const('ARGV', ['folder'])
+      set_command(:folder)
 
       # Since we have to mock the Kernel.exit call to prevent the whole test suite from exiting
       # the code after the TTY::Exit.exit_with call will just continue to run, which would not happen
       # in production usage. Thus, we have to mock these other methods as well to prevent an error from raising.
       expect(Kernel).to receive(:exit).with(usage_error_code).exactly(2).times
       allow_any_instance_of(NilClass).to receive(:match?).and_return(false)
-      session_adapter = SessionAdapter.new
       expect(SessionAdapter).to receive(:new).and_return(session_adapter).at_least(:once)
       expect(session_adapter).to receive(:update_session)
 
@@ -198,9 +198,8 @@ describe CLI do
     end
 
     it 'exits with usage error if id not a integer' do
-      stub_const('ARGV', ['folder', 'a'])
+      set_command(:folder, 'a')
 
-      session_adapter = SessionAdapter.new
       expect(SessionAdapter).to receive(:new).and_return(session_adapter).at_least(:once)
       expect(session_adapter).to receive(:update_session)
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -212,7 +211,7 @@ describe CLI do
 
   context 'ose-secret-pull' do
     it 'exits successfully when no name given' do
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
@@ -225,7 +224,7 @@ describe CLI do
     end
 
     it 'exits successfully when available name given' do
-      stub_const('ARGV', ['ose-secret-pull', 'spec_secret'])
+      set_command(:'ose-secret-pull', 'spec_secret')
 
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
@@ -238,7 +237,7 @@ describe CLI do
     end
 
     it 'exits with usage error if multiple arguments are given' do
-      stub_const('ARGV', ['ose-secret-pull', 'spec_secret', 'spec_secret2'])
+      set_command(:'ose-secret-pull', 'spec_secret', 'spec_secret2')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -249,7 +248,7 @@ describe CLI do
     it 'exits with usage error if no folder is selected' do
       clear_session
       setup_session
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       expect(OSESecret).to receive(:all).and_return([secret])
 
@@ -260,7 +259,7 @@ describe CLI do
     end
 
     it 'exits with usage error if oc is not installed' do
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       ose_adapter = OSEAdapter.new
       cmd = double
@@ -277,7 +276,7 @@ describe CLI do
     end
 
     it 'exits with usage error if oc is not logged in' do
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       ose_adapter = OSEAdapter.new
       cmd = double
@@ -297,7 +296,7 @@ describe CLI do
     end
 
     it 'exits with usage error if oc secret was not found' do
-      stub_const('ARGV', ['ose-secret-pull', 'spec_secret'])
+      set_command(:'ose-secret-pull', 'spec_secret')
 
       ose_adapter = OSEAdapter.new
       cmd = double
@@ -318,7 +317,7 @@ describe CLI do
     it 'exits with usage error if not authorized' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       response = double
       expect(OSESecret).to receive(:all).and_return([secret])
@@ -334,7 +333,7 @@ describe CLI do
     it 'exits with usage error if connection failed' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-pull'])
+      set_command(:'ose-secret-pull')
 
       expect(OSESecret).to receive(:all).and_return([secret])
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -348,7 +347,7 @@ describe CLI do
     it 'exits successfully if name is given' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       cry_adapter = double
       ose_adapter = double
@@ -365,7 +364,7 @@ describe CLI do
     it 'exits with usage error if name is missing' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-push'])
+      set_command(:'ose-secret-push')
 
       cry_adapter = double
       ose_adapter = double
@@ -384,7 +383,7 @@ describe CLI do
     it 'exits with usage error if multiple arguments' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret1', 'spec_secret2'])
+      set_command(:'ose-secret-push', 'spec_secret1', 'spec_secret2')
 
       cry_adapter = double
       ose_adapter = double
@@ -403,7 +402,7 @@ describe CLI do
     it 'exits with usage error if no folder is selected' do
       clear_session
       setup_session
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect { subject.run }.to output(/Folder must be selected using ccli folder <id>/).to_stderr
@@ -412,7 +411,7 @@ describe CLI do
     it 'exits with usage error if not authorized' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       response = double
       expect(Net::HTTP).to receive(:start).with('cryptopus.specs.com', 443).and_return(response)
@@ -427,7 +426,7 @@ describe CLI do
     it 'exits with usage error if connection fails' do
       setup_session
       select_folder(1)
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect { subject.run }.to output(/Could not connect/).to_stderr
@@ -435,7 +434,7 @@ describe CLI do
 
     it 'exits with usage error if oc is not installed' do
       setup_session
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       cry_adapter = double
       ose_adapter = OSEAdapter.new
@@ -459,7 +458,7 @@ describe CLI do
     end
 
     it 'exits with usage error if oc is not logged in' do
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       cry_adapter = double
       ose_adapter = OSEAdapter.new
@@ -487,7 +486,7 @@ describe CLI do
 
     it 'exits with usage error if cryptopus account was not found' do
       setup_session
-      stub_const('ARGV', ['ose-secret-push', 'spec_secret'])
+      set_command(:'ose-secret-push', 'spec_secret')
 
       cry_adapter = CryAdapter.new
 
@@ -506,18 +505,22 @@ describe CLI do
   def setup_session
     stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
 
-    SessionAdapter.new.update_session( { token:  '1234', username: 'bob', url: 'https://cryptopus.specs.com' } )
+    session_adapter.update_session( { token:  '1234', username: 'bob', url: 'https://cryptopus.specs.com' } )
   end
 
   def select_folder(id)
     stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
 
-    SessionAdapter.new.update_session({ folder:  id })
+    session_adapter.update_session({ folder:  id })
   end
 
   def clear_session
     stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
 
-    SessionAdapter.new.clear_session
+    session_adapter.clear_session
+  end
+
+  def set_command(command, *args)
+    stub_const('ARGV', [command.to_s] + args)
   end
 end

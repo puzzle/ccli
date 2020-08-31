@@ -28,7 +28,7 @@ class CLI
 
       c.action do |args, options|
         TTY::Exit.exit_with(:usage_error, 'URL missing') if args.empty?
-        SessionAdapter.new.update_session({ encoded_token: options.token, url: args.first })
+        session_adapter.update_session({ encoded_token: options.token, url: args.first })
         puts 'Successfully logged in'
       end
     end
@@ -38,7 +38,7 @@ class CLI
       c.description = 'Logs out of the ccli'
 
       c.action do
-        SessionAdapter.new.clear_session
+        session_adapter.clear_session
         puts 'Successfully logged out'
       end
     end
@@ -75,7 +75,7 @@ class CLI
         TTY::Exit.exit_with(:usage_error, 'id missing') unless id
         TTY::Exit.exit_with(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
 
-        SessionAdapter.new.update_session({ folder: id })
+        session_adapter.update_session({ folder: id })
 
         puts "Selected Folder with id: #{id}"
       end
@@ -92,10 +92,10 @@ class CLI
       c.action do |args|
         begin
           if args.empty?
-            CryAdapter.new.save_secrets(OSESecret.all)
+            cry_adapter.save_secrets(OSESecret.all)
             puts 'Saved secrets of current project'
           elsif args.length == 1
-            CryAdapter.new.save_secrets([OSESecret.find_by_name(args.first)])
+            cry_adapter.save_secrets([OSESecret.find_by_name(args.first)])
             puts "Saved secret #{args.first}"
           else
             TTY::Exit.exit_with(:usage_error, 'Only a single or no arguments are allowed')
@@ -129,8 +129,8 @@ class CLI
         TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
         TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
         begin
-          secret = CryAdapter.new.find_secret_account_by_name(secret_name)
-          OSEAdapter.new.insert_secret(Account.from_json(secret).to_osesecret)
+          secret = cry_adapter.find_secret_account_by_name(secret_name)
+          ose_adapter.insert_secret(Account.from_json(secret).to_osesecret)
           puts 'Secret was successfully applied'
         rescue UnauthorizedError
           TTY::Exit.exit_with(:usage_error, 'Authorization failed')
@@ -152,6 +152,21 @@ class CLI
     run!
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+
+  private
+
+  def ose_adapter
+    @ose_adapter ||= OSEAdapter.new
+  end
+
+  def cry_adapter
+    @ose_adapter ||= CryAdapter.new
+  end
+
+  def session_adapter
+    @ose_adapter ||= SessionAdapter.new
+  end
+
 end
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
