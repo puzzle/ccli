@@ -251,6 +251,8 @@ describe CLI do
       setup_session
       stub_const('ARGV', ['ose-secret-pull'])
 
+      expect(OSESecret).to receive(:all).and_return([secret])
+
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/Folder must be selected using ccli folder <id>/)
@@ -334,6 +336,7 @@ describe CLI do
       select_folder(1)
       stub_const('ARGV', ['ose-secret-pull'])
 
+      expect(OSESecret).to receive(:all).and_return([secret])
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
         .to output(/Could not connect/)
