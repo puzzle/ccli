@@ -40,6 +40,7 @@ describe CryAdapter do
                        .with('cryptopus.specs.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
 
       expect(response).to receive(:body).and_return(json_response)
 
@@ -117,6 +118,7 @@ describe CryAdapter do
                        .with('cryptopus.specs.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
 
       expect(subject).to receive(:send_request)
                      .with(having_attributes(body: json_body), kind_of(URI))
@@ -189,6 +191,7 @@ describe CryAdapter do
                        .with('cryptopus.specs.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
 
       expect(subject).to receive(:send_request)
                      .with(having_attributes(body: json_body), kind_of(URI))

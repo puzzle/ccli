@@ -93,6 +93,7 @@ class CryAdapter
       http.request(request)
     end
     raise UnauthorizedError if response.is_a?(Net::HTTPUnauthorized)
+    raise ForbiddenError if response.is_a?(Net::HTTPForbidden)
 
     JSON.parse(response.body, symbolize_names: true)
   end

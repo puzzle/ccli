@@ -9,6 +9,9 @@ end
 class UnauthorizedError < Error
 end
 
+class ForbiddenError < Error
+end
+
 class OpenshiftClientMissingError < Error
 end
 
