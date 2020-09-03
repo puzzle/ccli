@@ -161,7 +161,7 @@ class CLI
   end
 
   def session_adapter
-    @cry_adapter ||= SessionAdapter.new
+    @session_adapter ||= SessionAdapter.new
   end
 end
 
