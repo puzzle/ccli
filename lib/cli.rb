@@ -13,7 +13,7 @@ require_relative './models/ose_secret'
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
   def run
     program :name, 'ccli - cryptopus ccli'
     program :version, '1.0.0'
@@ -90,7 +90,10 @@ class CLI
                       'If no name is given, it will pull all secrets inside the selected project.'
 
       c.action do |args|
-        TTY::Exit.exit_with(:usage_error, 'Only a single or no arguments are allowed') if args.length > 1
+        if args.length > 1
+          TTY::Exit.exit_with(:usage_error,
+                              'Only a single or no arguments are allowed')
+        end
 
         execute_action({ secret_name: args.first }) do
           if args.empty?
@@ -125,36 +128,33 @@ class CLI
 
     run!
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
 
   private
 
   def execute_action(options = {})
-    begin
-      yield if block_given?
-    rescue SessionMissingError
-      TTY::Exit.exit_with(:usage_error, 'Not logged in')
-    rescue UnauthorizedError
-      TTY::Exit.exit_with(:usage_error, 'Authorization failed')
-    rescue ForbiddenError
-      TTY::Exit.exit_with(:usage_error, 'Access denied')
-    rescue SocketError
-      TTY::Exit.exit_with(:usage_error, 'Could not connect')
-    rescue NoFolderSelectedError
-      TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
-    rescue OpenshiftClientMissingError
-      TTY::Exit.exit_with(:usage_error, 'oc is not installed')
-    rescue OpenshiftClientNotLoggedInError
-      TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
-    rescue CryptopusAccountNotFoundError
-      TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                          "#{options[:secret_name]} was not found")
-    rescue OpenshiftSecretNotFoundError
-      TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                          "#{options[:secret_name]} was not found")
-
-    end
+    yield if block_given?
+  rescue SessionMissingError
+    TTY::Exit.exit_with(:usage_error, 'Not logged in')
+  rescue UnauthorizedError
+    TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+  rescue ForbiddenError
+    TTY::Exit.exit_with(:usage_error, 'Access denied')
+  rescue SocketError
+    TTY::Exit.exit_with(:usage_error, 'Could not connect')
+  rescue NoFolderSelectedError
+    TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
+  rescue OpenshiftClientMissingError
+    TTY::Exit.exit_with(:usage_error, 'oc is not installed')
+  rescue OpenshiftClientNotLoggedInError
+    TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
+  rescue CryptopusAccountNotFoundError
+    TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                        "#{options[:secret_name]} was not found")
+  rescue OpenshiftSecretNotFoundError
+    TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                        "#{options[:secret_name]} was not found")
   end
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
 
   def ose_adapter
     @ose_adapter ||= OSEAdapter.new
