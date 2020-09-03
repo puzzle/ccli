@@ -102,6 +102,8 @@ class CLI
           end
         rescue UnauthorizedError
           TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+        rescue ForbiddenError
+          TTY::Exit.exit_with(:usage_error, 'Access denied')
         rescue SocketError
           TTY::Exit.exit_with(:usage_error, 'Could not connect')
         rescue NoFolderSelectedError
@@ -134,6 +136,8 @@ class CLI
           puts 'Secret was successfully applied'
         rescue UnauthorizedError
           TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+        rescue ForbiddenError
+          TTY::Exit.exit_with(:usage_error, 'Access denied')
         rescue SocketError
           TTY::Exit.exit_with(:usage_error, 'Could not connect')
         rescue NoFolderSelectedError
@@ -160,13 +164,12 @@ class CLI
   end
 
   def cry_adapter
-    @ose_adapter ||= CryAdapter.new
+    @cry_adapter ||= CryAdapter.new
   end
 
   def session_adapter
-    @ose_adapter ||= SessionAdapter.new
+    @cry_adapter ||= SessionAdapter.new
   end
-
 end
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
