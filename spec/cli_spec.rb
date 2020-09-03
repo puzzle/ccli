@@ -358,7 +358,9 @@ describe CLI do
       expect(account).to receive(:to_osesecret).and_return(secret)
       expect(cry_adapter).to receive(:find_secret_account_by_name).with('spec_secret')
       expect(ose_adapter).to receive(:insert_secret)
-      expect { subject.run }.to output(/Secret was successfully applied/).to_stdout
+      expect { subject.run }
+        .to output(/Secret was successfully applied/)
+        .to_stdout
     end
 
     it 'exits with usage error if name is missing' do
