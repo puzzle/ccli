@@ -72,6 +72,24 @@ describe CryAdapter do
       end.to raise_error(UnauthorizedError)
     end
     
+    it 'raises error if forbidden' do
+      encoded_token = Base64.encode64('bob;1234')
+
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+
+      response = double
+
+      expect(Net::HTTP).to receive(:start)
+                       .with('cryptopus.specs.com', 443)
+                       .and_return(response)
+      expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
+
+      expect do
+        subject.get('accounts/3')
+      end.to raise_error(ForbiddenError)
+    end
+    
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
@@ -145,6 +163,24 @@ describe CryAdapter do
       end.to raise_error(UnauthorizedError)
     end
     
+    it 'raises error if forbidden' do
+      encoded_token = Base64.encode64('bob;1234')
+
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+
+      response = double
+
+      expect(Net::HTTP).to receive(:start)
+                       .with('cryptopus.specs.com', 443)
+                       .and_return(response)
+      expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
+
+      expect do
+        subject.post('accounts', { attrs: 'name' })
+      end.to raise_error(ForbiddenError)
+    end
+    
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
@@ -216,6 +252,24 @@ describe CryAdapter do
       expect do
         subject.patch('accounts', { attrs: 'name' })
       end.to raise_error(UnauthorizedError)
+    end
+    
+    it 'raises error if forbidden' do
+      encoded_token = Base64.encode64('bob;1234')
+
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+
+      response = double
+
+      expect(Net::HTTP).to receive(:start)
+                       .with('cryptopus.specs.com', 443)
+                       .and_return(response)
+      expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
+      expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
+
+      expect do
+        subject.patch('accounts', { attrs: 'name' })
+      end.to raise_error(ForbiddenError)
     end
     
     it 'raises error if connection fails' do
