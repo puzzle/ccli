@@ -28,8 +28,10 @@ class CLI
 
       c.action do |args, options|
         TTY::Exit.exit_with(:usage_error, 'URL missing') if args.empty?
-        session_adapter.update_session({ encoded_token: options.token, url: args.first })
-        puts 'Successfully logged in'
+        execute_action do
+          session_adapter.update_session({ encoded_token: options.token, url: args.first })
+          puts 'Successfully logged in'
+        end
       end
     end
 
@@ -38,8 +40,10 @@ class CLI
       c.description = 'Logs out of the ccli'
 
       c.action do
-        session_adapter.clear_session
-        puts 'Successfully logged out'
+        execute_action do
+          session_adapter.clear_session
+          puts 'Successfully logged out'
+        end
       end
     end
 
@@ -51,18 +55,12 @@ class CLI
 
       c.action do |args, options|
         TTY::Exit.exit_with(:usage_error, 'id missing') if args.empty?
-        begin
+        execute_action do
           account = Account.find(args.first)
-        rescue SessionMissingError
-          TTY::Exit.exit_with(:usage_error, 'Not logged in')
-        rescue UnauthorizedError
-          TTY::Exit.exit_with(:usage_error, 'Authorization failed')
-        rescue SocketError
-          TTY::Exit.exit_with(:usage_error, 'Could not connect')
+          out = account.username if options.username
+          out = account.password if options.password
+          puts out || account.to_yaml
         end
-        out = account.username if options.username
-        out = account.password if options.password
-        puts out || account.to_yaml
       end
     end
 
@@ -75,9 +73,11 @@ class CLI
         TTY::Exit.exit_with(:usage_error, 'id missing') unless id
         TTY::Exit.exit_with(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
 
-        session_adapter.update_session({ folder: id })
+        execute_action do
+          session_adapter.update_session({ folder: id })
 
-        puts "Selected Folder with id: #{id}"
+          puts "Selected Folder with id: #{id}"
+        end
       end
     end
 
@@ -90,31 +90,16 @@ class CLI
                       'If no name is given, it will pull all secrets inside the selected project.'
 
       c.action do |args|
-        begin
+        TTY::Exit.exit_with(:usage_error, 'Only a single or no arguments are allowed') if args.length > 1
+
+        execute_action({ secret_name: args.first }) do
           if args.empty?
             cry_adapter.save_secrets(OSESecret.all)
             puts 'Saved secrets of current project'
           elsif args.length == 1
             cry_adapter.save_secrets([OSESecret.find_by_name(args.first)])
             puts "Saved secret #{args.first}"
-          else
-            TTY::Exit.exit_with(:usage_error, 'Only a single or no arguments are allowed')
           end
-        rescue UnauthorizedError
-          TTY::Exit.exit_with(:usage_error, 'Authorization failed')
-        rescue ForbiddenError
-          TTY::Exit.exit_with(:usage_error, 'Access denied')
-        rescue SocketError
-          TTY::Exit.exit_with(:usage_error, 'Could not connect')
-        rescue NoFolderSelectedError
-          TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
-        rescue OpenshiftClientMissingError
-          TTY::Exit.exit_with(:usage_error, 'oc is not installed')
-        rescue OpenshiftClientNotLoggedInError
-          TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
-        rescue OpenshiftSecretNotFoundError
-          TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                              "#{args.first} was not found")
         end
       end
     end
@@ -130,26 +115,11 @@ class CLI
         secret_name = args.first
         TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
         TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
-        begin
+        execute_action({ secret_name: secret_name }) do
           secret = cry_adapter.find_secret_account_by_name(secret_name)
           ose_adapter.insert_secret(Account.from_json(secret).to_osesecret)
-          puts 'Secret was successfully applied'
-        rescue UnauthorizedError
-          TTY::Exit.exit_with(:usage_error, 'Authorization failed')
-        rescue ForbiddenError
-          TTY::Exit.exit_with(:usage_error, 'Access denied')
-        rescue SocketError
-          TTY::Exit.exit_with(:usage_error, 'Could not connect')
-        rescue NoFolderSelectedError
-          TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
-        rescue OpenshiftClientMissingError
-          TTY::Exit.exit_with(:usage_error, 'oc is not installed')
-        rescue OpenshiftClientNotLoggedInError
-          TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
-        rescue CryptopusAccountNotFoundError
-          TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                              "#{args.first} was not found")
         end
+        puts 'Secret was successfully applied'
       end
     end
 
@@ -158,6 +128,29 @@ class CLI
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
 
   private
+
+  def execute_action(options = {})
+    begin
+      yield if block_given?
+    rescue SessionMissingError
+      TTY::Exit.exit_with(:usage_error, 'Not logged in')
+    rescue UnauthorizedError
+      TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+    rescue ForbiddenError
+      TTY::Exit.exit_with(:usage_error, 'Access denied')
+    rescue SocketError
+      TTY::Exit.exit_with(:usage_error, 'Could not connect')
+    rescue NoFolderSelectedError
+      TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
+    rescue OpenshiftClientMissingError
+      TTY::Exit.exit_with(:usage_error, 'oc is not installed')
+    rescue OpenshiftClientNotLoggedInError
+      TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
+    rescue CryptopusAccountNotFoundError
+      TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                          "#{options.secret_name} was not found")
+    end
+  end
 
   def ose_adapter
     @ose_adapter ||= OSEAdapter.new
