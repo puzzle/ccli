@@ -40,6 +40,7 @@ class AccountSerializer
     end
 
     def from_json(json)
+      json = JSON.parse(json, symbolize_names: true)
       data = json[:data] || json
       attributes = data[:attributes]
       Account.new(attributes[:accountname],

@@ -76,10 +76,11 @@ describe CLI do
             category: 'regular'
           }
         }
-      }
+      }.to_json
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(cry_adapter).to receive(:get).and_return(json_response)
+
 
       expect{ subject.run }
         .to output(/id: 1\naccountname: spec_account\nusername: ccli_account\npassword: gfClNjq21D\ncategory: regular/)
@@ -100,7 +101,7 @@ describe CLI do
             category: 'regular'
           }
         }
-      }
+      }.to_json
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(cry_adapter).to receive(:get).and_return(json_response)
@@ -124,7 +125,7 @@ describe CLI do
             category: 'regular'
           }
         }
-      }
+      }.to_json
       cry_adapter = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(cry_adapter).to receive(:get).and_return(json_response)
@@ -354,9 +355,8 @@ describe CLI do
       account = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(Account).to receive(:from_json).and_return(account)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_secret_account_by_name).with('spec_secret')
+      expect(cry_adapter).to receive(:find_account_by_name).with('spec_secret').and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
       expect { subject.run }
         .to output(/Secret was successfully applied/)
@@ -373,9 +373,8 @@ describe CLI do
       account = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(Account).to receive(:from_json).and_return(account)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -392,9 +391,8 @@ describe CLI do
       account = double
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(Account).to receive(:from_json).and_return(account)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -446,9 +444,8 @@ describe CLI do
 
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(Account).to receive(:from_json).and_return(account)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd)
       expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
       expect(negative_result).to receive(:success?).and_return(false)
@@ -471,9 +468,8 @@ describe CLI do
 
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(Account).to receive(:from_json).and_return(account)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_secret_account_by_name)
+      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
@@ -488,12 +484,13 @@ describe CLI do
 
     it 'exits with usage error if cryptopus account was not found' do
       setup_session
+      select_folder(1)
       set_command(:'ose-secret-push', 'spec_secret')
 
       cry_adapter = CryAdapter.new
 
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:persisted_secret_account).with('spec_secret')
+      expect(cry_adapter).to receive(:persisted_account_by_name).with('spec_secret')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }

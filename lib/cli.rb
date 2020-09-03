@@ -116,8 +116,8 @@ class CLI
         TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
         TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
-          secret = cry_adapter.find_secret_account_by_name(secret_name)
-          ose_adapter.insert_secret(Account.from_json(secret).to_osesecret)
+          secret_account = cry_adapter.find_account_by_name(secret_name)
+          ose_adapter.insert_secret(secret_account.to_osesecret)
         end
         puts 'Secret was successfully applied'
       end
@@ -148,7 +148,11 @@ class CLI
       TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
     rescue CryptopusAccountNotFoundError
       TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                          "#{options.secret_name} was not found")
+                          "#{options[:secret_name]} was not found")
+    rescue OpenshiftSecretNotFoundError
+      TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
+                          "#{options[:secret_name]} was not found")
+
     end
   end
 
