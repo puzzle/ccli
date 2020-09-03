@@ -44,7 +44,7 @@ describe CryAdapter do
 
       expect(response).to receive(:body).and_return(json_response)
 
-      account = subject.get('accounts/3')
+      account = JSON.parse(subject.get('accounts/3'), symbolize_names: true)
 
       data = account[:data]
       attrs = data[:attributes]
@@ -379,16 +379,17 @@ describe CryAdapter do
     it 'gets show for secret account' do
       expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
 
-      expect(subject).to receive(:get).with('accounts/1').exactly(:once)
+      expect(subject).to receive(:get).with('accounts/1').exactly(:once).and_return({}.to_json)
+      expect(Account).to receive(:from_json)
 
-      subject.find_secret_account_by_name('spec_secret')
+      subject.find_account_by_name('spec_secret')
     end
 
     it 'raises error if account was not found' do
       expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
 
       expect do
-        subject.find_secret_account_by_name('unavailable_secret')
+        subject.find_account_by_name('unavailable_secret')
       end.to raise_error(CryptopusAccountNotFoundError)
     end
   end

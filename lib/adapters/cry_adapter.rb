@@ -36,7 +36,7 @@ class CryAdapter
       secret_account = secret.to_account
       secret_account.folder = session_adapter.selected_folder_id
 
-      persisted_secret = persisted_secret_account(secret.name)
+      persisted_secret = persisted_account_by_name(secret.name)
       if persisted_secret
         patch("accounts/#{persisted_secret.id}", secret_account.to_json)
       else
@@ -45,24 +45,25 @@ class CryAdapter
     end
   end
 
-  def find_secret_account_by_name(name)
-    secret_account = persisted_secret_account(name)
+  def find_account_by_name(name)
+    secret_account = persisted_account_by_name(name)
 
     raise CryptopusAccountNotFoundError unless secret_account
 
-    get("accounts/#{secret_account.id}")
+    Account.from_json(get("accounts/#{secret_account.id}"))
   end
 
   private
 
-  def persisted_secret_account(secret_name)
+  def persisted_account_by_name(secret_name)
     folder_accounts.select do |a|
       a.accountname == secret_name
     end.first
   end
 
   def folder_accounts
-    json = get("folders/#{session_adapter.selected_folder_id}")
+    json = JSON.parse(get("folders/#{session_adapter.selected_folder_id}"),
+                      symbolize_names: true)
     included = json[:included] || []
     @folder_accounts ||= included.map do |record|
       Account.from_json(record) if record[:type] == 'accounts'
@@ -95,6 +96,6 @@ class CryAdapter
     raise UnauthorizedError if response.is_a?(Net::HTTPUnauthorized)
     raise ForbiddenError if response.is_a?(Net::HTTPForbidden)
 
-    JSON.parse(response.body, symbolize_names: true)
+    response.body
   end
 end
