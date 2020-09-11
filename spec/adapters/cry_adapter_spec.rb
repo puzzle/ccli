@@ -22,7 +22,7 @@ describe CryAdapter do
     it 'returns account hash from http response' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com'})
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com'})
 
       response = double
       json_response = {
@@ -37,7 +37,7 @@ describe CryAdapter do
         }
       }.to_json
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -58,12 +58,12 @@ describe CryAdapter do
     it 'raises error if unauthorized' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -75,12 +75,12 @@ describe CryAdapter do
     it 'raises error if forbidden' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
@@ -93,7 +93,7 @@ describe CryAdapter do
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
         subject.get('accounts/3')
@@ -117,7 +117,7 @@ describe CryAdapter do
     it 'sends request using given body' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com'})
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com'})
 
       json_body = {
         data: {
@@ -133,7 +133,7 @@ describe CryAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -149,12 +149,12 @@ describe CryAdapter do
     it 'raises error if unauthorized' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -166,12 +166,12 @@ describe CryAdapter do
     it 'raises error if forbidden' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
@@ -184,7 +184,7 @@ describe CryAdapter do
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
         subject.post('accounts', { attrs: 'name' })
@@ -208,7 +208,7 @@ describe CryAdapter do
     it 'sends request using given body' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com'})
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com'})
 
       json_body = {
         data: {
@@ -224,7 +224,7 @@ describe CryAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -240,12 +240,12 @@ describe CryAdapter do
     it 'raises error if unauthorized' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -257,12 +257,12 @@ describe CryAdapter do
     it 'raises error if forbidden' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
@@ -275,7 +275,7 @@ describe CryAdapter do
     it 'raises error if connection fails' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
         subject.patch('accounts', { attrs: 'name' })
@@ -299,7 +299,7 @@ describe CryAdapter do
     it 'sends post request if secret not persisted yet' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com', folder: '1' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {})]
       expect(subject).to receive(:folder_accounts).exactly(:once).and_return([])
@@ -316,7 +316,7 @@ describe CryAdapter do
     it 'sends patch request if secret already persisted' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com', folder: '1' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {})]
       expect(subject).to receive(:folder_accounts).exactly(:once).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
@@ -332,7 +332,7 @@ describe CryAdapter do
     it 'sends both patch and post requests for each secret respectively' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com', folder: '1' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {}), OSESecret.new('spec_secret2', {})]
       expect(subject).to receive(:folder_accounts).exactly(:twice).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
@@ -365,7 +365,7 @@ describe CryAdapter do
     it 'raises error if folder not selected' do
       encoded_token = Base64.encode64('bob;1234')
 
-      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       secrets = [OSESecret.new('spec_secret', {})]
 

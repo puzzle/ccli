@@ -45,7 +45,7 @@ class SessionAdapter
     return {} unless token
 
     decoded_token = Base64.decode64(token)
-    attrs = decoded_token.split(';')
+    attrs = decoded_token.split(':')
     {
       username: attrs[0],
       token: attrs[1]

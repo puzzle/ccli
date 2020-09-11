@@ -15,28 +15,30 @@ class CLI
 
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
   def run
-    program :name, 'ccli - cryptopus ccli'
+    program :name, 'cry - cryptopus cli'
     program :version, '1.0.0'
     program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
-    program :help, 'Usage', 'ccli [flags]'
+    program :help, 'Usage', 'cry [flags]'
 
     command :login do |c|
-      c.syntax = 'ccli login <url> [options]'
+      c.syntax = 'cry login <credentials>'
       c.description = 'Logs in to the ccli'
-      c.option '--token TOKEN', String, 'Authentification Token including api user username'
 
-      c.action do |args, options|
-        TTY::Exit.exit_with(:usage_error, 'URL missing') if args.empty?
+      c.action do |args|
+        TTY::Exit.exit_with(:usage_error, 'Credentials missing') if args.empty?
+        token, url = args.first.split('@')
+        TTY::Exit.exit_with(:usage_error, 'URL missing') unless url
+        TTY::Exit.exit_with(:usage_error, 'Token missing') if token.empty?
         execute_action do
-          session_adapter.update_session({ encoded_token: options.token, url: args.first })
+          session_adapter.update_session({ encoded_token: token, url: url })
           puts 'Successfully logged in'
         end
       end
     end
 
     command :logout do |c|
-      c.syntax = 'ccli logout'
+      c.syntax = 'cry logout'
       c.description = 'Logs out of the ccli'
 
       c.action do
@@ -48,7 +50,7 @@ class CLI
     end
 
     command :account do |c|
-      c.syntax = 'ccli account <id> [options]'
+      c.syntax = 'cry account <id> [options]'
       c.description = 'Fetches an account by the given id'
       c.option '--username', String, 'Only show the username of the user'
       c.option '--password', String, 'Only show the password of the user'
@@ -65,7 +67,7 @@ class CLI
     end
 
     command :folder do |c|
-      c.syntax = 'ccli folder <id>'
+      c.syntax = 'cry folder <id>'
       c.description = 'Selects the Cryptopus folder by id'
 
       c.action do |args|
@@ -82,7 +84,7 @@ class CLI
     end
 
     command :'ose-secret-pull' do |c|
-      c.syntax = 'ccli ose secret pull <secret-name>'
+      c.syntax = 'cry ose secret pull <secret-name>'
       c.summary = 'Pulls secret from Openshift to Cryptopus'
       c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
                       'If a Cryptopus Account in the selected folder using the name ' \
@@ -108,7 +110,7 @@ class CLI
     end
 
     command :'ose-secret-push' do |c|
-      c.syntax = 'ccli ose secret push <secret-name>'
+      c.syntax = 'cry ose secret push <secret-name>'
       c.summary = 'Pushes secret from Cryptopus to Openshift'
       c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
                       'If a Secret in the selected Openshift project using the name ' \
@@ -142,7 +144,7 @@ class CLI
   rescue SocketError
     TTY::Exit.exit_with(:usage_error, 'Could not connect')
   rescue NoFolderSelectedError
-    TTY::Exit.exit_with(:usage_error, 'Folder must be selected using ccli folder <id>')
+    TTY::Exit.exit_with(:usage_error, 'Folder must be selected using cry folder <id>')
   rescue OpenshiftClientMissingError
     TTY::Exit.exit_with(:usage_error, 'oc is not installed')
   rescue OpenshiftClientNotLoggedInError

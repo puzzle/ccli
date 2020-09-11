@@ -8,6 +8,7 @@ require 'psych'
 describe SessionAdapter do
   subject { described_class.new }
   let (:spec_session_path) { 'spec/tmp/.ccli/session' }
+  let (:encoded_token) { Base64.encode64('bob:1234') }
 
   before(:each) do
     stub_const("SessionAdapter::FILE_LOCATION", spec_session_path)
@@ -21,25 +22,21 @@ describe SessionAdapter do
     it 'writes new session file with correct data' do
       expect(File.exist?('../tmp/.ccli')).to be(false)
 
-      encoded_token = Base64.encode64('bob;1234')
-
-      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect(File.exist?(File.expand_path(spec_session_path))).to be(true)
 
       file_data = Psych.load_file(File.expand_path(SessionAdapter::FILE_LOCATION))
 
-      expect(file_data[:url]).to eq('https://cryptopus.specs.com')
+      expect(file_data[:url]).to eq('https://cryptopus.example.com')
       expect(file_data[:username]).to eq('bob')
       expect(file_data[:token]).to eq('1234')
     end
 
     it 'overwrites existing session' do
-      encoded_token_old = Base64.encode64('bob;1234')
+      subject.update_session({ encoded_token: encoded_token, url: 'https://old.host.com' })
 
-      subject.update_session({ encoded_token: encoded_token_old, url: 'https://old.host.com' })
-
-      encoded_token_new = Base64.encode64('carl;56789')
+      encoded_token_new = Base64.encode64('carl:56789')
 
       subject.update_session({ encoded_token: encoded_token_new, url: 'https://new.host.com' })
 
@@ -59,16 +56,14 @@ describe SessionAdapter do
     end
 
     it 'selects folder after setting session' do
-      encoded_token = Base64.encode64('bob;1234')
-
-      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       subject.update_session({ folder: 2})
 
       file_data = Psych.load_file(File.expand_path(SessionAdapter::FILE_LOCATION))
 
       expect(file_data[:folder]).to eq(2)
-      expect(file_data[:url]).to eq('https://cryptopus.specs.com')
+      expect(file_data[:url]).to eq('https://cryptopus.example.com')
       expect(file_data[:username]).to eq('bob')
       expect(file_data[:token]).to eq('1234')
     end
@@ -78,9 +73,7 @@ describe SessionAdapter do
     it 'deletes session data' do
       expect(File.exist?('../tmp/.ccli')).to be(false)
 
-      encoded_token = Base64.encode64('bob;1234')
-
-      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.specs.com' })
+      subject.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect(File.exist?(File.expand_path(spec_session_path))).to be(true)
 
