@@ -22,8 +22,22 @@ describe CLI do
   end
 
   context 'login' do
-    it 'exits with usage error if url missing' do
+    before(:each) do
+      stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session' )
+    end
+
+    it 'exits with usage error if args missing' do
       set_command(:login)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      allow_any_instance_of(NilClass).to receive(:split).and_return(["a", "b"])
+      expect{ subject.run }
+        .to output(/Credentials missing/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if url missing' do
+      set_command(:login, 'WEj2eCJnwKbjw@')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -31,9 +45,17 @@ describe CLI do
         .to_stderr
     end
 
-    it 'exits successfully when url given' do
-      set_command(:login, 'https://cryptopus.specs.com')
-      stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session' )
+    it 'exits with usage error if token missing' do
+      set_command(:login, '@https://cryptopus.example.com')
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+      expect{ subject.run }
+        .to output(/Token missing/)
+        .to_stderr
+    end
+
+    it 'exits successfully when url and token given' do
+      set_command(:login, 'WEj2eCJnwKbjw@https://cryptopus.example.com')
 
       expect{ subject.run }
         .to output(/Successfully logged in/)
@@ -150,7 +172,7 @@ describe CLI do
       set_command(:account, '1')
       response = double
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.specs.com', 443)
+                       .with('cryptopus.example.com', 443)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -255,7 +277,7 @@ describe CLI do
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
-        .to output(/Folder must be selected using ccli folder <id>/)
+        .to output(/Folder must be selected using cry folder <id>/)
         .to_stderr
     end
 
@@ -322,7 +344,7 @@ describe CLI do
 
       response = double
       expect(OSESecret).to receive(:all).and_return([secret])
-      expect(Net::HTTP).to receive(:start).with('cryptopus.specs.com', 443).and_return(response)
+      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443).and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -405,7 +427,7 @@ describe CLI do
       set_command(:'ose-secret-push', 'spec_secret')
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
-      expect { subject.run }.to output(/Folder must be selected using ccli folder <id>/).to_stderr
+      expect { subject.run }.to output(/Folder must be selected using cry folder <id>/).to_stderr
     end
 
     it 'exits with usage error if not authorized' do
@@ -414,7 +436,7 @@ describe CLI do
       set_command(:'ose-secret-push', 'spec_secret')
 
       response = double
-      expect(Net::HTTP).to receive(:start).with('cryptopus.specs.com', 443).and_return(response)
+      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443).and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -504,7 +526,7 @@ describe CLI do
   def setup_session
     stub_const("SessionAdapter::FILE_LOCATION", 'spec/tmp/.ccli/session')
 
-    session_adapter.update_session( { token:  '1234', username: 'bob', url: 'https://cryptopus.specs.com' } )
+    session_adapter.update_session( { token:  '1234', username: 'bob', url: 'https://cryptopus.example.com' } )
   end
 
   def select_folder(id)
