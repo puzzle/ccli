@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../models/account'
-require_relative '../models/ose_secret'
+require 'models/account'
+require 'models/ose_secret'
+require 'models/account'
 require 'yaml'
 
 class AccountSerializer
