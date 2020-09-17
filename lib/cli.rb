@@ -4,11 +4,11 @@ require 'rubygems'
 require 'commander'
 require 'tty-exit'
 
-require_relative './adapters/session_adapter'
-require_relative './adapters/cry_adapter'
-require_relative './adapters/ose_adapter'
-require_relative './models/account'
-require_relative './models/ose_secret'
+require 'adapters/session_adapter'
+require 'adapters/cry_adapter'
+require 'adapters/ose_adapter'
+require 'models/account'
+require 'models/ose_secret'
 
 class CLI
   include Commander::Methods

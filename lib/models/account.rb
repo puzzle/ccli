@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative '../errors'
-require_relative '../adapters/session_adapter'
-require_relative '../serializers/account_serializer'
+require 'errors'
+require 'adapters/session_adapter'
+require 'serializers/account_serializer'
 
 class Account
   attr_reader :id, :accountname, :username, :password, :category
