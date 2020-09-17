@@ -84,7 +84,7 @@ class CLI
     end
 
     command :'ose-secret-pull' do |c|
-      c.syntax = 'cry ose secret pull <secret-name>'
+      c.syntax = 'cry ose-secret-pull <secret-name>'
       c.summary = 'Pulls secret from Openshift to Cryptopus'
       c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
                       'If a Cryptopus Account in the selected folder using the name ' \
@@ -110,7 +110,7 @@ class CLI
     end
 
     command :'ose-secret-push' do |c|
-      c.syntax = 'cry ose secret push <secret-name>'
+      c.syntax = 'cry ose-secret-push <secret-name>'
       c.summary = 'Pushes secret from Cryptopus to Openshift'
       c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
                       'If a Secret in the selected Openshift project using the name ' \
