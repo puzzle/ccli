@@ -5,15 +5,17 @@ require 'adapters/session_adapter'
 require 'serializers/account_serializer'
 
 class Account
-  attr_reader :id, :accountname, :username, :password, :category
+  attr_reader :id, :accountname, :username, :password, :type, :ose_secret
   attr_accessor :folder
 
-  def initialize(accountname, username, password, category, id: nil)
+  def initialize(accountname: nil, username: nil, password: nil,
+                 ose_secret: nil, type: nil, id: nil)
     @id = id
     @accountname = accountname
     @username = username
     @password = password
-    @category = category
+    @ose_secret = ose_secret
+    @type = type || 'credentials'
   end
 
   def to_json(*_args)

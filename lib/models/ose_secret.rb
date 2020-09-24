@@ -4,11 +4,11 @@ require 'adapters/ose_adapter'
 require 'serializers/ose_secret_serializer'
 
 class OSESecret
-  attr_reader :name, :data
+  attr_reader :name, :ose_secret
 
-  def initialize(name, data)
+  def initialize(name, ose_secret)
     @name = name
-    @data = data
+    @ose_secret = ose_secret
   end
 
   def to_account

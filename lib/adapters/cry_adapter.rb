@@ -66,7 +66,8 @@ class CryAdapter
                       symbolize_names: true)
     included = json[:included] || []
     @folder_accounts ||= included.map do |record|
-      Account.from_json(record) if record[:type] == 'accounts'
+      Account.from_json(record.to_json) if %w[account_ose_secrets
+                                              account_credentials].include? record[:type]
     end.compact
   end
 

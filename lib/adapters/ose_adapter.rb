@@ -30,7 +30,7 @@ class OSEAdapter
     raise OpenshiftClientNotLoggedInError unless oc_logged_in?
 
     File.open("/tmp/#{secret.name}.yml", 'w') do |file|
-      file.write secret.data
+      file.write secret.ose_secret
     end
 
     cmd.run("oc delete -f /tmp/#{secret.name}.yml --ignore-not-found=true")

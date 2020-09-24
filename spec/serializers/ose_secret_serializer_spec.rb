@@ -19,7 +19,7 @@ describe OSESecretSerializer do
       secret = subject.from_yaml(secret_yaml)
 
       expect(secret.name).to eq('spec_secret')
-      expect(secret.data).to eq(secret_yaml)
+      expect(secret.ose_secret).to eq(secret_yaml)
     end
   end
 
@@ -30,9 +30,8 @@ describe OSESecretSerializer do
       account = subject.to_account(secret)
 
       expect(account.accountname).to eq('spec_secret')
-      expect(account.username).to eq('spec_secret')
-      expect(account.password).to eq(secret_yaml)
-      expect(account.category).to eq('openshift_secret')
+      expect(account.ose_secret).to eq(secret_yaml)
+      expect(account.type).to eq('ose_secret')
     end
   end
 end

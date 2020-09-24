@@ -15,9 +15,10 @@ class AccountSerializer
           id: account.id,
           attributes: {
             accountname: account.accountname,
-            category: account.category,
+            type: account.type,
             cleartext_username: account.username,
-            cleartext_password: account.password
+            cleartext_password: account.password,
+            ose_secret: account.ose_secret
           },
           relationships: {
             folder: {
@@ -37,22 +38,23 @@ class AccountSerializer
         'accountname' => account.accountname,
         'username' => account.username,
         'password' => account.password,
-        'category' => account.category }.to_yaml
+        'type' => account.type }.to_yaml
     end
 
     def from_json(json)
       json = JSON.parse(json, symbolize_names: true)
       data = json[:data] || json
       attributes = data[:attributes]
-      Account.new(attributes[:accountname],
-                  attributes[:cleartext_username],
-                  attributes[:cleartext_password],
-                  attributes[:category],
+      Account.new(accountname: attributes[:accountname],
+                  username: attributes[:cleartext_username],
+                  password: attributes[:cleartext_password],
+                  ose_secret: attributes[:ose_secret],
+                  type: attributes[:type],
                   id: data[:id])
     end
 
     def to_osesecret(account)
-      OSESecret.new(account.accountname, account.password)
+      OSESecret.new(account.accountname, account.ose_secret)
     end
   end
 end

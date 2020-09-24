@@ -32,7 +32,7 @@ describe CryAdapter do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'credentials'
           }
         }
       }.to_json
@@ -52,7 +52,7 @@ describe CryAdapter do
       expect(attrs[:accountname]).to eq('spec_account')
       expect(attrs[:cleartext_username]).to eq('ccli_account')
       expect(attrs[:cleartext_password]).to eq('gfClNjq21D')
-      expect(attrs[:category]).to eq('regular')
+      expect(attrs[:type]).to eq('credentials')
     end
     
     it 'raises error if unauthorized' do
@@ -126,7 +126,7 @@ describe CryAdapter do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'credentials'
           }
         }
       }.to_json
@@ -217,7 +217,7 @@ describe CryAdapter do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'credentials'
           }
         }
       }.to_json
@@ -319,7 +319,7 @@ describe CryAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {})]
-      expect(subject).to receive(:folder_accounts).exactly(:once).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+      expect(subject).to receive(:folder_accounts).exactly(:once).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
       secret_account = secrets.first.to_account
       secret_account.folder = '1'
       expect(subject).to receive(:patch)
@@ -335,7 +335,7 @@ describe CryAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {}), OSESecret.new('spec_secret2', {})]
-      expect(subject).to receive(:folder_accounts).exactly(:twice).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+      expect(subject).to receive(:folder_accounts).exactly(:twice).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
       secret_account1 = secrets[0].to_account
       secret_account1.folder = '1'
       secret_account2 = secrets[1].to_account
@@ -343,11 +343,11 @@ describe CryAdapter do
       expect(subject).to receive(:patch)
                      .with('accounts/1', secret_account1.to_json)
                      .exactly(:once)
-                     .and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret')])
+                     .and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
       expect(subject).to receive(:post)
                      .with('accounts', secret_account2.to_json)
                      .exactly(:once)
-                     .and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret')])
+                     .and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
 
       subject.save_secrets(secrets)
     end
@@ -377,7 +377,7 @@ describe CryAdapter do
 
   context 'find_secret_account_by_name' do
     it 'gets show for secret account' do
-      expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+      expect(subject).to receive(:folder_accounts).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
 
       expect(subject).to receive(:get).with('accounts/1').exactly(:once).and_return({}.to_json)
       expect(Account).to receive(:from_json)
@@ -386,7 +386,7 @@ describe CryAdapter do
     end
 
     it 'raises error if account was not found' do
-      expect(subject).to receive(:folder_accounts).and_return([Account.new('spec_secret', 'spec_secret', 'pass', 'openshift_secret', id: '1')])
+      expect(subject).to receive(:folder_accounts).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
 
       expect do
         subject.find_account_by_name('unavailable_secret')

@@ -12,7 +12,7 @@ class OSESecretSerializer
     end
 
     def to_account(secret)
-      Account.new(secret.name, secret.name, secret.data, 'openshift_secret')
+      Account.new(accountname: secret.name, ose_secret: secret.ose_secret, type: 'ose_secret')
     end
   end
 end

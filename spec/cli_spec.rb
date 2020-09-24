@@ -95,7 +95,7 @@ describe CLI do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'credentials'
           }
         }
       }.to_json
@@ -105,7 +105,7 @@ describe CLI do
 
 
       expect{ subject.run }
-        .to output(/id: 1\naccountname: spec_account\nusername: ccli_account\npassword: gfClNjq21D\ncategory: regular/)
+        .to output(/id: 1\naccountname: spec_account\nusername: ccli_account\npassword: gfClNjq21D\ntype: credentials/)
         .to_stdout
     end
 
@@ -120,7 +120,7 @@ describe CLI do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'Account::Credentials'
           }
         }
       }.to_json
@@ -144,7 +144,7 @@ describe CLI do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
-            category: 'regular'
+            type: 'Account::Credentials'
           }
         }
       }.to_json
