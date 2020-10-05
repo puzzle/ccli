@@ -4,11 +4,7 @@ require 'rubygems'
 require 'commander'
 require 'tty-exit'
 
-require 'adapters/session_adapter'
-require 'adapters/cry_adapter'
-require 'adapters/ose_adapter'
-require 'models/account'
-require 'models/ose_secret'
+Dir[File.join(__dir__, '**', '*.rb')].sort.each { |file| require file }
 
 class CLI
   include Commander::Methods
@@ -125,6 +121,19 @@ class CLI
           ose_adapter.insert_secret(secret_account.to_osesecret)
         end
         puts 'Secret was successfully applied'
+      end
+    end
+
+    command :teams do |c|
+      c.syntax = 'cry teams'
+      c.description = 'Lists all available teams'
+
+      c.action do
+        execute_action do
+          teams = Team.all
+          output = teams.map(&:render_list).join("\n")
+          puts output
+        end
       end
     end
 

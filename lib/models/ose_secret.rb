@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-require 'adapters/ose_adapter'
-require 'serializers/ose_secret_serializer'
-
 class OSESecret
   attr_reader :name, :ose_secret
 

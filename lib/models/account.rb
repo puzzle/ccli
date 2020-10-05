@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-require 'errors'
-require 'adapters/session_adapter'
-require 'serializers/account_serializer'
-
 class Account
   attr_reader :id, :accountname, :username, :password, :type, :ose_secret
   attr_accessor :folder
