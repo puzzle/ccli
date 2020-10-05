@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
-require 'models/ose_secret'
 require 'psych'
-require 'models/ose_secret'
 
 class OSESecretSerializer
   class << self
