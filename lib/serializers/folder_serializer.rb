@@ -6,7 +6,7 @@ class FolderSerializer
       json = JSON.parse(json, symbolize_names: true)
       data = json[:data] || json
       attributes = data[:attributes]
-      Folder.new(attributes[:name], id: data[:id])
+      Folder.new(name: attributes[:name], id: data[:id])
     end
   end
 end

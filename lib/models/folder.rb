@@ -3,7 +3,7 @@
 class Folder
   attr_reader :name, :id
 
-  def initialize(name, id: nil)
+  def initialize(name: nil, id: nil)
     @name = name
     @id = id
   end

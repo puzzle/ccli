@@ -13,11 +13,23 @@ class Team
     TeamPresenter.render_list(self)
   end
 
+  def folder_by_name(name)
+    folders.find do |folder|
+      folder.name.downcase.gsub(' ', '-') == name.downcase
+    end
+  end
+
   class << self
     def all
       response = JSON.parse(CryAdapter.new.get('teams'), symbolize_names: true)
       response[:data].map do |team|
         TeamSerializer.from_json(team.to_json, folders_json: included_folders(response))
+      end
+    end
+
+    def find_by_name(name)
+      Team.all.find do |team|
+        team.name.downcase.gsub(' ', '-') == name.downcase
       end
     end
 

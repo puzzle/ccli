@@ -521,6 +521,116 @@ describe CLI do
     end
   end
 
+  context 'use' do
+    it 'selects correct folder by team and folder name' do
+      set_command(:use, 'bbt/ruby')
+
+      session_adapter = SessionAdapter.new
+      teams = [Team.new(name: 'bbt', folders: [Folder.new(name: 'ruby', id: 1), Folder.new(name: 'java', id: 2)], id: 3)]
+      expect(Team).to receive(:all).and_return(teams)
+      expect(SessionAdapter).to receive(:new).exactly(2).times.and_return(session_adapter)
+      expect(session_adapter).to receive(:update_session).with({ folder: 1 })
+
+      expect { subject.run }
+        .to output(/Selected folder ruby/)
+        .to_stdout
+    end
+
+    it 'selects correct folder by team and folder name not considering spaces and cases' do
+      set_command(:use, 'pUzZle-Bbt/jAva-lAng')
+
+      session_adapter = SessionAdapter.new
+      teams = [Team.new(name: 'PuzzlE bBt', folders: [Folder.new(name: 'ruBY laNg', id: 1), Folder.new(name: 'JAva lanG', id: 2)], id: 3)]
+      expect(Team).to receive(:all).and_return(teams)
+      expect(SessionAdapter).to receive(:new).exactly(2).times.and_return(session_adapter)
+      expect(session_adapter).to receive(:update_session).with({ folder: 2 })
+
+      expect { subject.run }
+        .to output(/Selected folder java-lang/)
+        .to_stdout
+    end
+
+    it 'exits with usage error if argument is missing' do
+      set_command(:use)
+
+      team = double
+      folder = double
+      allow_any_instance_of(NilClass).to receive(:split).and_return(['a', 'b'])
+
+
+      expect(Team).to receive(:find_by_name).and_return(team)
+      expect(team).to receive(:folder_by_name).and_return(folder)
+      expect(folder).to receive(:id).and_return(1)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+
+      expect { subject.run }
+        .to output(/Arguments missing\nUsage: cry use <team\/folder>/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if team name is missing' do
+      set_command(:use, '/ruby')
+
+      team = double
+      folder = double
+
+      expect(Team).to receive(:find_by_name).and_return(team)
+      expect(team).to receive(:folder_by_name).and_return(folder)
+      expect(folder).to receive(:id).and_return(1)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+
+      expect { subject.run }
+        .to output(/Team name is missing\nUsage: cry use <team\/folder>/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if folder name is missing' do
+      set_command(:use, 'puzzle-bbt/')
+
+      team = double
+      folder = double
+      allow_any_instance_of(NilClass).to receive(:downcase)
+
+      expect(Team).to receive(:find_by_name).and_return(team)
+      expect(team).to receive(:folder_by_name).and_return(folder)
+      expect(folder).to receive(:id).and_return(1)
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+
+      expect { subject.run }
+        .to output(/Folder name is missing\nUsage: cry use <team\/folder>/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if team was not found' do
+      set_command(:use, 'puzzle-java/ruby')
+
+      expect(Team).to receive(:all).and_return([Team.new(name: 'puzzle-bbt'), Team.new(name: 'puzzle-ruby')])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+
+      expect { subject.run }
+        .to output(/Team with the given name puzzle-java was not found/)
+        .to_stderr
+    end
+
+    it 'exits with usage error if folder was not found' do
+      set_command(:use, 'puzzle-bbt/java')
+
+      expect(Team).to receive(:all).and_return([Team.new(name: 'puzzle-bbt',
+                                                         folders: [Folder.new(name: 'ruby')]),
+                                                Team.new(name: 'puzzle-ruby')])
+
+      expect(Kernel).to receive(:exit).with(usage_error_code)
+
+      expect { subject.run }
+        .to output(/Folder with the given name java was not found/)
+        .to_stderr
+    end
+  end
+
   private
 
   def setup_session

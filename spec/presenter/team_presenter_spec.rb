@@ -4,7 +4,7 @@ describe TeamPresenter do
   subject { described_class }
 
   let(:team) do
-    Team.new(name: 'bbt', folders: [Folder.new('ruby', id: 1), Folder.new('java', id: 2)], id: 3)
+    Team.new(name: 'bbt', folders: [Folder.new(name: 'ruby', id: 1), Folder.new(name: 'java', id: 2)], id: 3)
   end
 
   context 'render_list' do
@@ -17,7 +17,7 @@ describe TeamPresenter do
 
     it 'serializes team correctly and replaces spaces with dashes for use command' do
       team_with_spaces = Team.new(name: 'puzzle bbt',
-                                  folders: [Folder.new('ruby lang', id: 1), Folder.new('java lang', id: 2)],
+                                  folders: [Folder.new(name: 'ruby lang', id: 1), Folder.new(name: 'java lang', id: 2)],
                                   id: 3)
       output = subject.render_list(team_with_spaces)
 
