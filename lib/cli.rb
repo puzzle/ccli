@@ -114,13 +114,19 @@ class CLI
 
       c.action do |args|
         secret_name = args.first
-        TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
         TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
-          secret_account = cry_adapter.find_account_by_name(secret_name)
-          ose_adapter.insert_secret(secret_account.to_osesecret)
+          secret_accounts = if secret_name.nil?
+                              session_adapter.selected_folder.accounts
+                            else
+                              [cry_adapter.find_account_by_name(secret_name)]
+                            end
+          secret_accounts.each do |account|
+            secret_account = Account.find(account.id)
+            ose_adapter.insert_secret(secret_account.to_osesecret)
+            puts "Secret #{secret_account.accountname} was successfully applied"
+          end
         end
-        puts 'Secret was successfully applied'
       end
     end
 

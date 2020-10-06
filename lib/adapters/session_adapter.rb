@@ -33,13 +33,17 @@ class SessionAdapter
     FileUtils.rm_r(ccli_directory_path)
   end
 
-  def selected_folder_id
-    raise NoFolderSelectedError if session_data[:folder].nil?
-
-    @selected_folder_id ||= session_data[:folder]
+  def selected_folder
+    @selected_folder ||= Folder.find(selected_folder_id)
   end
 
   private
+
+  def selected_folder_id
+    raise NoFolderSelectedError if session_data[:folder].nil?
+
+    session_data[:folder]
+  end
 
   def extracted_token(token)
     return {} unless token

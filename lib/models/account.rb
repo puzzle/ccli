@@ -31,6 +31,12 @@ class Account
       AccountSerializer.from_json(CryAdapter.new.get("accounts/#{id}"))
     end
 
+    def find_by_name_and_folder_id(name, id)
+      Folder.find(id).accounts.find do |account|
+        account.accountname.downcase == name.downcase
+      end
+    end
+
     def from_json(json)
       AccountSerializer.from_json(json)
     end
