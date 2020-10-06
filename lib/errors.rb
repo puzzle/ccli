@@ -26,3 +26,9 @@ end
 
 class CryptopusAccountNotFoundError < Error
 end
+
+class TeamNotFoundError < Error
+end
+
+class FolderNotFoundError < Error
+end

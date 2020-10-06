@@ -137,6 +137,25 @@ class CLI
       end
     end
 
+    command :use do |c|
+      c.syntax = 'cry use <team/folder>'
+      c.description = 'Select the current folder'
+
+      c.action do |args|
+        team_name, folder_name = extract_use_args(args)
+        execute_action({ team_name: team_name, folder_name: folder_name }) do
+          selected_team = Team.find_by_name(team_name)
+          raise TeamNotFoundError unless selected_team
+
+          selected_folder = selected_team.folder_by_name(folder_name)
+          raise FolderNotFoundError unless selected_folder
+
+          session_adapter.update_session({ folder: selected_folder.id })
+          puts "Selected folder #{folder_name.downcase} in team #{team_name.downcase}"
+        end
+      end
+    end
+
     run!
   end
 
@@ -164,8 +183,24 @@ class CLI
   rescue OpenshiftSecretNotFoundError
     TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
                         "#{options[:secret_name]} was not found")
+  rescue TeamNotFoundError
+    TTY::Exit.exit_with(:usage_error, 'Team with the given name ' \
+                        "#{options[:team_name]} was not found")
+  rescue FolderNotFoundError
+    TTY::Exit.exit_with(:usage_error, 'Folder with the given name ' \
+                        "#{options[:folder_name]} was not found")
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
+
+  def extract_use_args(args)
+    usage_info = 'Usage: cry use <team/folder>'
+
+    TTY::Exit.exit_with(:usage_error, "Arguments missing\n#{usage_info}") unless args.length >= 1
+    team_name, folder_name = args.first.split('/').map(&:downcase)
+    TTY::Exit.exit_with(:usage_error, "Team name is missing\n#{usage_info}") if team_name.empty?
+    TTY::Exit.exit_with(:usage_error, "Folder name is missing\n#{usage_info}") unless folder_name
+    [team_name, folder_name]
+  end
 
   def ose_adapter
     @ose_adapter ||= OSEAdapter.new

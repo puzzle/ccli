@@ -45,7 +45,7 @@ describe TeamSerializer do
   end
 
   let(:team) do
-    Team.new(name: 'bbt', folders: [Folder.new('ruby', id: 1), Folder.new('java', id: 2)], id: 3)
+    Team.new(name: 'bbt', folders: [Folder.new(name: 'ruby', id: 1), Folder.new(name: 'java', id: 2)], id: 3)
   end
 
   context 'from_json' do
