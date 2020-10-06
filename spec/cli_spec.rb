@@ -374,33 +374,36 @@ describe CLI do
 
       cry_adapter = double
       ose_adapter = double
-      account = double
+      account = Account.new(accountname: 'spec_secret', id: 1)
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
       expect(cry_adapter).to receive(:find_account_by_name).with('spec_secret').and_return(account)
+      expect(Account).to receive(:find).with(1).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
       expect { subject.run }
-        .to output(/Secret was successfully applied/)
+        .to output(/Secret spec_secret was successfully applied/)
         .to_stdout
     end
 
-    it 'exits with usage error if name is missing' do
+    it 'exits successfully if name is missing' do
       setup_session
       select_folder(1)
       set_command(:'ose-secret-push')
 
-      cry_adapter = double
       ose_adapter = double
-      account = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      accounts = [Account.new(accountname: 'secret1', id: 1), Account.new(accountname: 'secret2', id: 2)]
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
-      expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
-      expect(ose_adapter).to receive(:insert_secret)
 
-      expect(Kernel).to receive(:exit).with(usage_error_code)
-      expect { subject.run }.to output(/Secret name is missing/).to_stderr
+      expect(Folder).to receive(:find).with(1).and_return(Folder.new(id: 1, accounts: accounts))
+
+      expect(Account).to receive(:find).with(1).exactly(:once).and_return(accounts[0])
+      expect(Account).to receive(:find).with(2).exactly(:once).and_return(accounts[1])
+      expect(ose_adapter).to receive(:insert_secret).exactly(:twice)
+
+      expect { subject.run }
+        .to output(/Secret secret1 was successfully applied\nSecret secret2 was successfully applied/)
+        .to_stdout
     end
 
     it 'exits with usage error if multiple arguments' do
@@ -410,12 +413,13 @@ describe CLI do
 
       cry_adapter = double
       ose_adapter = double
-      account = double
+      account = Account.new(id: 1)
       expect(CryAdapter).to receive(:new).and_return(cry_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
       expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
+      expect(Account).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect { subject.run }.to output(/Only one secret can be pushed/).to_stderr
@@ -460,7 +464,7 @@ describe CLI do
 
       cry_adapter = double
       ose_adapter = OSEAdapter.new
-      account = double
+      account = Account.new(id: 1)
       cmd = double
       negative_result = double
 
@@ -471,6 +475,7 @@ describe CLI do
       expect(ose_adapter).to receive(:cmd).and_return(cmd)
       expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
       expect(negative_result).to receive(:success?).and_return(false)
+      expect(Account).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -483,7 +488,7 @@ describe CLI do
 
       cry_adapter = double
       ose_adapter = OSEAdapter.new
-      account = double
+      account = Account.new(id: 1)
       cmd = double
       negative_result = double
       positive_result = double
@@ -497,6 +502,7 @@ describe CLI do
       expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
       expect(positive_result).to receive(:success?).and_return(true)
       expect(negative_result).to receive(:success?).and_return(false)
+      expect(Account).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -509,10 +515,8 @@ describe CLI do
       select_folder(1)
       set_command(:'ose-secret-push', 'spec_secret')
 
-      cry_adapter = CryAdapter.new
-
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:persisted_account_by_name).with('spec_secret')
+      expect(Account).to receive(:find_by_name_and_folder_id).with('spec_secret', 1)
+      expect(Folder).to receive(:find).and_return(Folder.new(id: 1))
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }

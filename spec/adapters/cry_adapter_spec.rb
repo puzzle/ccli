@@ -302,9 +302,13 @@ describe CryAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {})]
-      expect(subject).to receive(:folder_accounts).exactly(:once).and_return([])
       secret_account = secrets.first.to_account
-      secret_account.folder = '1'
+      secret_account.folder = 1
+      folder = Folder.new(id: 1, accounts: [secret_account])
+      session_adapter = double
+      expect(SessionAdapter).to receive(:new).exactly(:once).and_return(session_adapter)
+      expect(session_adapter).to receive(:selected_folder).and_return(folder)
+      expect(subject).to receive(:find_account_by_name).exactly(:once)
       expect(subject).to receive(:post)
                      .with('accounts', secret_account.to_json)
                      .exactly(:once)
@@ -317,11 +321,15 @@ describe CryAdapter do
       encoded_token = Base64.encode64('bob;1234')
 
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
-
+      secret_account = Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: 1)
+      folder = Folder.new(id: 1, accounts: [secret_account])
+      session_adapter = double
+      expect(SessionAdapter).to receive(:new).exactly(:once).and_return(session_adapter)
+      expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
+      expect(Account).to receive(:find_by_name_and_folder_id).exactly(:once).and_return(secret_account)
       secrets = [OSESecret.new('spec_secret', {})]
-      expect(subject).to receive(:folder_accounts).exactly(:once).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
       secret_account = secrets.first.to_account
-      secret_account.folder = '1'
+      secret_account.folder = 1
       expect(subject).to receive(:patch)
                      .with('accounts/1', secret_account.to_json)
                      .exactly(:once)
@@ -335,11 +343,17 @@ describe CryAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secrets = [OSESecret.new('spec_secret', {}), OSESecret.new('spec_secret2', {})]
-      expect(subject).to receive(:folder_accounts).exactly(:twice).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
       secret_account1 = secrets[0].to_account
-      secret_account1.folder = '1'
+      secret_account1.folder = 1
       secret_account2 = secrets[1].to_account
-      secret_account2.folder = '1'
+      secret_account2.folder = 1
+      secret_account = Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')
+      folder = Folder.new(id: 1, accounts: [])
+      session_adapter = double
+      expect(SessionAdapter).to receive(:new).exactly(:once).and_return(session_adapter)
+      expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
+      expect(subject).to receive(:find_account_by_name).with('spec_secret').exactly(:once).and_return(secret_account)
+      expect(subject).to receive(:find_account_by_name).with('spec_secret2').exactly(:once)
       expect(subject).to receive(:patch)
                      .with('accounts/1', secret_account1.to_json)
                      .exactly(:once)
@@ -372,25 +386,6 @@ describe CryAdapter do
       expect do
         subject.save_secrets(secrets)
       end.to raise_error(NoFolderSelectedError)
-    end
-  end
-
-  context 'find_secret_account_by_name' do
-    it 'gets show for secret account' do
-      expect(subject).to receive(:folder_accounts).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
-
-      expect(subject).to receive(:get).with('accounts/1').exactly(:once).and_return({}.to_json)
-      expect(Account).to receive(:from_json)
-
-      subject.find_account_by_name('spec_secret')
-    end
-
-    it 'raises error if account was not found' do
-      expect(subject).to receive(:folder_accounts).and_return([Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: '1')])
-
-      expect do
-        subject.find_account_by_name('unavailable_secret')
-      end.to raise_error(CryptopusAccountNotFoundError)
     end
   end
 end

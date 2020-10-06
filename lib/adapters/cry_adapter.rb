@@ -34,9 +34,9 @@ class CryAdapter
   def save_secrets(secrets)
     secrets.each do |secret|
       secret_account = secret.to_account
-      secret_account.folder = session_adapter.selected_folder_id
+      secret_account.folder = session_adapter.selected_folder.id
 
-      persisted_secret = persisted_account_by_name(secret.name)
+      persisted_secret = find_account_by_name(secret.name)
       if persisted_secret
         patch("accounts/#{persisted_secret.id}", secret_account.to_json)
       else
@@ -46,30 +46,14 @@ class CryAdapter
   end
 
   def find_account_by_name(name)
-    secret_account = persisted_account_by_name(name)
+    secret_account = Account.find_by_name_and_folder_id(name, session_adapter.selected_folder.id)
 
     raise CryptopusAccountNotFoundError unless secret_account
 
-    Account.from_json(get("accounts/#{secret_account.id}"))
+    secret_account
   end
 
   private
-
-  def persisted_account_by_name(secret_name)
-    folder_accounts.select do |a|
-      a.accountname == secret_name
-    end.first
-  end
-
-  def folder_accounts
-    json = JSON.parse(get("folders/#{session_adapter.selected_folder_id}"),
-                      symbolize_names: true)
-    included = json[:included] || []
-    @folder_accounts ||= included.map do |record|
-      Account.from_json(record.to_json) if %w[account_ose_secrets
-                                              account_credentials].include? record[:type]
-    end.compact
-  end
 
   def session_adapter
     @session_adapter ||= SessionAdapter.new
