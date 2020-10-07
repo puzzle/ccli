@@ -20,4 +20,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'commander', '~> 4.5', '>= 4.5.2'
   s.add_runtime_dependency 'tty-command'
   s.add_runtime_dependency 'tty-exit'
+  s.add_runtime_dependency 'tty-logger'
 end

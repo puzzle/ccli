@@ -238,11 +238,11 @@ describe CLI do
 
       cryptopus_adapter = double
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
-      expect(cryptopus_adapter).to receive(:save_secrets)
-      expect(OSESecret).to receive(:all)
+      expect(cryptopus_adapter).to receive(:save_secret)
+      expect(OSESecret).to receive(:all).and_return([secret])
 
       expect{ subject.run }
-        .to output(/Saved secrets of current project/)
+        .to output(/Saved secret spec_secret/)
         .to_stdout
     end
 
@@ -251,7 +251,7 @@ describe CLI do
 
       cryptopus_adapter = double
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
-      expect(cryptopus_adapter).to receive(:save_secrets)
+      expect(cryptopus_adapter).to receive(:save_secret)
       expect(OSESecret).to receive(:find_by_name).with('spec_secret')
 
       expect{ subject.run }
@@ -333,7 +333,7 @@ describe CLI do
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
-        .to output(/secret with the given name spec_secret was not found/)
+        .to output(/Secret with the given name spec_secret was not found/)
         .to_stderr
     end
 
@@ -402,7 +402,7 @@ describe CLI do
       expect(ose_adapter).to receive(:insert_secret).exactly(:twice)
 
       expect { subject.run }
-        .to output(/Secret secret1 was successfully applied\nSecret secret2 was successfully applied/)
+        .to output(/Secret secret2 was successfully applied/)
         .to_stdout
     end
 
@@ -520,7 +520,7 @@ describe CLI do
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
-        .to output(/secret with the given name spec_secret was not found/)
+        .to output(/Secret with the given name spec_secret was not found/)
         .to_stderr
     end
   end

@@ -54,6 +54,8 @@ GEM
     tty-command (0.9.0)
       pastel (~> 0.7.0)
     tty-exit (0.1.0)
+    tty-logger (0.3.0)
+      pastel (~> 0.7.0)
     unicode-display_width (1.7.0)
 
 PLATFORMS
@@ -67,6 +69,7 @@ DEPENDENCIES
   rubocop (~> 0.89.0)
   tty-command
   tty-exit
+  tty-logger
 
 BUNDLED WITH
    2.1.4

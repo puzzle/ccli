@@ -3,13 +3,14 @@
 require 'rubygems'
 require 'commander'
 require 'tty-exit'
+require 'tty-logger'
 
 Dir[File.join(__dir__, '**', '*.rb')].sort.each { |file| require file }
-
+# rubocop:disable Metrics/ClassLength
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'cry - cryptopus cli'
     program :version, '1.0.0'
@@ -22,13 +23,13 @@ class CLI
       c.description = 'Logs in to the ccli'
 
       c.action do |args|
-        TTY::Exit.exit_with(:usage_error, 'Credentials missing') if args.empty?
+        exit_with_error(:usage_error, 'Credentials missing') if args.empty?
         token, url = args.first.split('@')
-        TTY::Exit.exit_with(:usage_error, 'URL missing') unless url
-        TTY::Exit.exit_with(:usage_error, 'Token missing') if token.empty?
+        exit_with_error(:usage_error, 'URL missing') unless url
+        exit_with_error(:usage_error, 'Token missing') if token.empty?
         execute_action do
           session_adapter.update_session({ encoded_token: token, url: url })
-          puts 'Successfully logged in'
+          log_success 'Successfully logged in'
         end
       end
     end
@@ -40,7 +41,7 @@ class CLI
       c.action do
         execute_action do
           session_adapter.clear_session
-          puts 'Successfully logged out'
+          log_success 'Successfully logged out'
         end
       end
     end
@@ -52,8 +53,9 @@ class CLI
       c.option '--password', String, 'Only show the password of the user'
 
       c.action do |args, options|
-        TTY::Exit.exit_with(:usage_error, 'id missing') if args.empty?
+        exit_with_error(:usage_error, 'id missing') if args.empty?
         execute_action do
+          logger.info 'Fetching account...'
           account = Account.find(args.first)
           out = account.username if options.username
           out = account.password if options.password
@@ -68,13 +70,13 @@ class CLI
 
       c.action do |args|
         id = args.first
-        TTY::Exit.exit_with(:usage_error, 'id missing') unless id
-        TTY::Exit.exit_with(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
+        exit_with_error(:usage_error, 'id missing') unless id
+        exit_with_error(:usage_error, 'id invalid') unless id.match?(/(^\d{1,10}$)/)
 
         execute_action do
           session_adapter.update_session({ folder: id })
 
-          puts "Selected Folder with id: #{id}"
+          log_success "Selected Folder with id: #{id}"
         end
       end
     end
@@ -89,17 +91,22 @@ class CLI
 
       c.action do |args|
         if args.length > 1
-          TTY::Exit.exit_with(:usage_error,
-                              'Only a single or no arguments are allowed')
+          exit_with_error(:usage_error,
+                          'Only a single or no arguments are allowed')
         end
 
         execute_action({ secret_name: args.first }) do
           if args.empty?
-            cryptopus_adapter.save_secrets(OSESecret.all)
-            puts 'Saved secrets of current project'
+            logger.info 'Fetching secrets...'
+            OSESecret.all.each do |secret|
+              logger.info "Saving secret #{secret.name}..."
+              cryptopus_adapter.save_secret(secret)
+              log_success "Saved secret #{secret.name}"
+            end
           elsif args.length == 1
-            cryptopus_adapter.save_secrets([OSESecret.find_by_name(args.first)])
-            puts "Saved secret #{args.first}"
+            logger.info "Saving secret #{args.first}..."
+            cryptopus_adapter.save_secret(OSESecret.find_by_name(args.first))
+            log_success "Saved secret #{args.first}"
           end
         end
       end
@@ -114,17 +121,21 @@ class CLI
 
       c.action do |args|
         secret_name = args.first
-        TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
+        exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
           secret_accounts = if secret_name.nil?
+                              logger.info 'Fetching all accounts in folder...'
                               session_adapter.selected_folder.accounts
                             else
+                              logger.info "Fetching account #{secret_name}..."
                               [cryptopus_adapter.find_account_by_name(secret_name)]
                             end
           secret_accounts.each do |account|
+            logger.info "Fetching secret #{account.accountname}..."
             secret_account = Account.find(account.id)
+            logger.info "Inserting secret #{account.accountname}..."
             ose_adapter.insert_secret(secret_account.to_osesecret)
-            puts "Secret #{secret_account.accountname} was successfully applied"
+            log_success "Secret #{secret_account.accountname} was successfully applied"
           end
         end
       end
@@ -136,6 +147,7 @@ class CLI
 
       c.action do
         execute_action do
+          logger.info 'Fetching teams...'
           teams = Team.all
           output = teams.map(&:render_list).join("\n")
           puts output
@@ -150,14 +162,16 @@ class CLI
       c.action do |args|
         team_name, folder_name = extract_use_args(args)
         execute_action({ team_name: team_name, folder_name: folder_name }) do
+          logger.info "Looking for team #{team_name}..."
           selected_team = Team.find_by_name(team_name)
           raise TeamNotFoundError unless selected_team
 
+          logger.info "Looking for folder #{folder_name}..."
           selected_folder = selected_team.folder_by_name(folder_name)
           raise FolderNotFoundError unless selected_folder
 
           session_adapter.update_session({ folder: selected_folder.id })
-          puts "Selected folder #{folder_name.downcase} in team #{team_name.downcase}"
+          log_success "Selected folder #{folder_name.downcase} in team #{team_name.downcase}"
         end
       end
     end
@@ -170,42 +184,62 @@ class CLI
   def execute_action(options = {})
     yield if block_given?
   rescue SessionMissingError
-    TTY::Exit.exit_with(:usage_error, 'Not logged in')
+    exit_with_error(:usage_error, 'Not logged in')
   rescue UnauthorizedError
-    TTY::Exit.exit_with(:usage_error, 'Authorization failed')
+    exit_with_error(:usage_error, 'Authorization failed')
   rescue ForbiddenError
-    TTY::Exit.exit_with(:usage_error, 'Access denied')
+    exit_with_error(:usage_error, 'Access denied')
   rescue SocketError
-    TTY::Exit.exit_with(:usage_error, 'Could not connect')
+    exit_with_error(:usage_error, 'Could not connect')
   rescue NoFolderSelectedError
-    TTY::Exit.exit_with(:usage_error, 'Folder must be selected using cry folder <id>')
+    exit_with_error(:usage_error, 'Folder must be selected using cry folder <id>')
   rescue OpenshiftClientMissingError
-    TTY::Exit.exit_with(:usage_error, 'oc is not installed')
+    exit_with_error(:usage_error, 'oc is not installed')
   rescue OpenshiftClientNotLoggedInError
-    TTY::Exit.exit_with(:usage_error, 'oc is not logged in')
+    exit_with_error(:usage_error, 'oc is not logged in')
   rescue CryptopusAccountNotFoundError
-    TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                        "#{options[:secret_name]} was not found")
+    exit_with_error(:usage_error, 'Secret with the given name ' \
+                                  "#{options[:secret_name]} was not found")
   rescue OpenshiftSecretNotFoundError
-    TTY::Exit.exit_with(:usage_error, 'secret with the given name ' \
-                        "#{options[:secret_name]} was not found")
+    exit_with_error(:usage_error, 'Secret with the given name ' \
+                                  "#{options[:secret_name]} was not found")
   rescue TeamNotFoundError
-    TTY::Exit.exit_with(:usage_error, 'Team with the given name ' \
-                        "#{options[:team_name]} was not found")
+    exit_with_error(:usage_error, 'Team with the given name ' \
+                                  "#{options[:team_name]} was not found")
   rescue FolderNotFoundError
-    TTY::Exit.exit_with(:usage_error, 'Folder with the given name ' \
-                        "#{options[:folder_name]} was not found")
+    exit_with_error(:usage_error, 'Folder with the given name ' \
+                                  "#{options[:folder_name]} was not found")
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+
 
   def extract_use_args(args)
     usage_info = 'Usage: cry use <team/folder>'
 
-    TTY::Exit.exit_with(:usage_error, "Arguments missing\n#{usage_info}") unless args.length >= 1
+    exit_with_error(:usage_error, "Arguments missing\n#{usage_info}") unless args.length >= 1
     team_name, folder_name = args.first.split('/').map(&:downcase)
-    TTY::Exit.exit_with(:usage_error, "Team name is missing\n#{usage_info}") if team_name.empty?
-    TTY::Exit.exit_with(:usage_error, "Folder name is missing\n#{usage_info}") unless folder_name
+    exit_with_error(:usage_error, "Team name is missing\n#{usage_info}") if team_name.empty?
+    exit_with_error(:usage_error, "Folder name is missing\n#{usage_info}") unless folder_name
     [team_name, folder_name]
+  end
+
+  def exit_with_error(error, msg)
+    logger = TTY::Logger.new do |config|
+      config.output = $stderr
+    end
+    logger.error(msg)
+    TTY::Exit.exit_with(error)
+  end
+
+  def log_success(msg)
+    logger = TTY::Logger.new do |config|
+      config.output = $stdout
+    end
+    logger.success msg
+  end
+
+  def logger
+    @logger ||= TTY::Logger.new
   end
 
   def ose_adapter
@@ -220,5 +254,6 @@ class CLI
     @session_adapter ||= SessionAdapter.new
   end
 end
+# rubocop:enable Metrics/ClassLength
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
