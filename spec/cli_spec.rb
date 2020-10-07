@@ -99,9 +99,9 @@ describe CLI do
           }
         }
       }.to_json
-      cry_adapter = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:get).and_return(json_response)
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
 
 
       expect{ subject.run }
@@ -124,9 +124,9 @@ describe CLI do
           }
         }
       }.to_json
-      cry_adapter = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:get).and_return(json_response)
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
 
       expect{ subject.run }
         .to output(/ccli_account/)
@@ -148,9 +148,9 @@ describe CLI do
           }
         }
       }.to_json
-      cry_adapter = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:get).and_return(json_response)
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
 
       expect{ subject.run }
         .to output(/gfClNjq21D/)
@@ -236,9 +236,9 @@ describe CLI do
     it 'exits successfully when no name given' do
       set_command(:'ose-secret-pull')
 
-      cry_adapter = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:save_secrets)
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:save_secrets)
       expect(OSESecret).to receive(:all)
 
       expect{ subject.run }
@@ -249,9 +249,9 @@ describe CLI do
     it 'exits successfully when available name given' do
       set_command(:'ose-secret-pull', 'spec_secret')
 
-      cry_adapter = double
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
-      expect(cry_adapter).to receive(:save_secrets)
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:save_secrets)
       expect(OSESecret).to receive(:find_by_name).with('spec_secret')
 
       expect{ subject.run }
@@ -372,13 +372,13 @@ describe CLI do
       select_folder(1)
       set_command(:'ose-secret-push', 'spec_secret')
 
-      cry_adapter = double
+      cryptopus_adapter = double
       ose_adapter = double
       account = Account.new(accountname: 'spec_secret', id: 1)
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_account_by_name).with('spec_secret').and_return(account)
+      expect(cryptopus_adapter).to receive(:find_account_by_name).with('spec_secret').and_return(account)
       expect(Account).to receive(:find).with(1).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
       expect { subject.run }
@@ -411,13 +411,13 @@ describe CLI do
       select_folder(1)
       set_command(:'ose-secret-push', 'spec_secret1', 'spec_secret2')
 
-      cry_adapter = double
+      cryptopus_adapter = double
       ose_adapter = double
       account = Account.new(id: 1)
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
       expect(Account).to receive(:find).and_return(account)
 
@@ -462,16 +462,16 @@ describe CLI do
       setup_session
       set_command(:'ose-secret-push', 'spec_secret')
 
-      cry_adapter = double
+      cryptopus_adapter = double
       ose_adapter = OSEAdapter.new
       account = Account.new(id: 1)
       cmd = double
       negative_result = double
 
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd)
       expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
       expect(negative_result).to receive(:success?).and_return(false)
@@ -486,17 +486,17 @@ describe CLI do
     it 'exits with usage error if oc is not logged in' do
       set_command(:'ose-secret-push', 'spec_secret')
 
-      cry_adapter = double
+      cryptopus_adapter = double
       ose_adapter = OSEAdapter.new
       account = Account.new(id: 1)
       cmd = double
       negative_result = double
       positive_result = double
 
-      expect(CryAdapter).to receive(:new).and_return(cry_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cry_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)

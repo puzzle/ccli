@@ -21,7 +21,7 @@ class Team
 
   class << self
     def all
-      response = JSON.parse(CryAdapter.new.get('teams'), symbolize_names: true)
+      response = JSON.parse(CryptopusAdapter.new.get('teams'), symbolize_names: true)
       response[:data].map do |team|
         TeamSerializer.from_json(team.to_json, folders_json: included_folders(response))
       end

@@ -5,7 +5,7 @@ require 'base64'
 require 'fileutils'
 require 'psych'
 
-describe CryAdapter do
+describe CryptopusAdapter do
   subject { described_class.new }
   let (:spec_session_path) { 'spec/tmp/.ccli/session' }
   let (:session_adapter) { SessionAdapter.new }

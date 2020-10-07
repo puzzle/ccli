@@ -28,7 +28,7 @@ class Account
 
   class << self
     def find(id)
-      AccountSerializer.from_json(CryAdapter.new.get("accounts/#{id}"))
+      AccountSerializer.from_json(CryptopusAdapter.new.get("accounts/#{id}"))
     end
 
     def find_by_name_and_folder_id(name, id)
