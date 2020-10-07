@@ -95,10 +95,10 @@ class CLI
 
         execute_action({ secret_name: args.first }) do
           if args.empty?
-            cry_adapter.save_secrets(OSESecret.all)
+            cryptopus_adapter.save_secrets(OSESecret.all)
             puts 'Saved secrets of current project'
           elsif args.length == 1
-            cry_adapter.save_secrets([OSESecret.find_by_name(args.first)])
+            cryptopus_adapter.save_secrets([OSESecret.find_by_name(args.first)])
             puts "Saved secret #{args.first}"
           end
         end
@@ -119,7 +119,7 @@ class CLI
           secret_accounts = if secret_name.nil?
                               session_adapter.selected_folder.accounts
                             else
-                              [cry_adapter.find_account_by_name(secret_name)]
+                              [cryptopus_adapter.find_account_by_name(secret_name)]
                             end
           secret_accounts.each do |account|
             secret_account = Account.find(account.id)
@@ -212,8 +212,8 @@ class CLI
     @ose_adapter ||= OSEAdapter.new
   end
 
-  def cry_adapter
-    @cry_adapter ||= CryAdapter.new
+  def cryptopus_adapter
+    @cryptopus_adapter ||= CryptopusAdapter.new
   end
 
   def session_adapter

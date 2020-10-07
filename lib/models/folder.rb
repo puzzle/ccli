@@ -11,7 +11,7 @@ class Folder
 
   class << self
     def find(id)
-      json = JSON.parse(CryAdapter.new.get("folders/#{id}"),
+      json = JSON.parse(CryptopusAdapter.new.get("folders/#{id}"),
                         symbolize_names: true)
       included = json[:included] || []
       name = json[:data][:attributes][:name]

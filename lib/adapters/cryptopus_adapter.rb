@@ -5,7 +5,7 @@ require 'net/http'
 require 'json'
 require 'base64'
 
-class CryAdapter
+class CryptopusAdapter
 
   def root_url
     @root_url ||= "#{session_adapter.session_data[:url]}/api"
