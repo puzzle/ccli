@@ -31,17 +31,15 @@ class CryptopusAdapter
     send_request(request, uri)
   end
 
-  def save_secrets(secrets)
-    secrets.each do |secret|
-      secret_account = secret.to_account
-      secret_account.folder = session_adapter.selected_folder.id
+  def save_secret(secret)
+    secret_account = secret.to_account
+    secret_account.folder = session_adapter.selected_folder.id
 
+    begin
       persisted_secret = find_account_by_name(secret.name)
-      if persisted_secret
-        patch("accounts/#{persisted_secret.id}", secret_account.to_json)
-      else
-        post('accounts', secret_account.to_json)
-      end
+      patch("accounts/#{persisted_secret.id}", secret_account.to_json)
+    rescue CryptopusAccountNotFoundError
+      post('accounts', secret_account.to_json)
     end
   end
 
