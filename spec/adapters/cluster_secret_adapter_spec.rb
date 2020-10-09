@@ -5,8 +5,14 @@ require 'base64'
 require 'fileutils'
 require 'psych'
 
-describe OSEAdapter do
+describe ClusterSecretAdapter do
   subject { described_class.new }
+
+  before do
+    allow(subject).to receive(:client).and_return('oc')
+    allow(subject).to receive(:client_missing_error).and_return(OpenshiftClientMissingError)
+    allow(subject).to receive(:client_not_logged_in_error).and_return(OpenshiftClientNotLoggedInError)
+  end
 
   context 'fetch_secret' do
     it 'fetches secret and returns it as hash' do
@@ -19,7 +25,7 @@ describe OSEAdapter do
       expect(positive_result).to receive(:success?).exactly(:twice).and_return(true)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
       secret_yaml = {
         type: 'Opaque',
@@ -68,7 +74,7 @@ describe OSEAdapter do
       expect(negative_result).to receive(:success?).exactly(:once).and_return(false)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(negative_result)
 
       expect do
         subject.fetch_secret('spec_secret')
@@ -85,7 +91,7 @@ describe OSEAdapter do
       expect(positive_result).to receive(:success?).exactly(:twice).and_return(true)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
       expect(cmd).to receive(:run)
                  .with('oc get -o yaml secret non_existing_secret')
@@ -108,7 +114,7 @@ describe OSEAdapter do
       expect(positive_result).to receive(:success?).exactly(:twice).and_return(true)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
       secrets = ['spec_secret1', 'spec_secret2']
 
@@ -132,7 +138,7 @@ describe OSEAdapter do
       expect(positive_result).to receive(:success?).exactly(:twice).and_return(true)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
       yaml = { apiVersion: 'v1', data: { password: 'very-secret-password' }, metadata: { name: 'spec_secret' } }.to_yaml
       secret = OSESecret.new('spec_secret', yaml)
 
@@ -172,7 +178,7 @@ describe OSEAdapter do
       expect(negative_result).to receive(:success?).exactly(:once).and_return(false)
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(negative_result)
       yaml = { apiVersion: 'v1', data: { password: 'very-secret-password' }, metadata: { name: 'spec_secret' } }.to_yaml
       secret = OSESecret.new('spec_secret', yaml)
 

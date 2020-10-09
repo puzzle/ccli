@@ -24,9 +24,5 @@ class OSESecret
     def all
       OSEAdapter.new.fetch_all_secrets.map { |s| OSESecretSerializer.from_yaml(s) }
     end
-
-    def from_account(account)
-      OSESecret.from_json(account)
-    end
   end
 end

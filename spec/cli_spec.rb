@@ -308,7 +308,7 @@ describe CLI do
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(negative_result)
       expect(positive_result).to receive(:success?).and_return(true)
       expect(negative_result).to receive(:success?).and_return(false)
 
@@ -327,7 +327,7 @@ describe CLI do
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(3).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(positive_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
       expect(positive_result).to receive(:success?).and_return(true).exactly(2).times
       expect(cmd).to receive(:run).with('oc get -o yaml secret spec_secret').and_raise(exit_error('oc get secret'))
 
@@ -499,7 +499,7 @@ describe CLI do
       expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
-      expect(cmd).to receive(:run!).with('oc project').and_return(negative_result)
+      expect(cmd).to receive(:run!).with('oc get secret').and_return(negative_result)
       expect(positive_result).to receive(:success?).and_return(true)
       expect(negative_result).to receive(:success?).and_return(false)
       expect(Account).to receive(:find).and_return(account)
