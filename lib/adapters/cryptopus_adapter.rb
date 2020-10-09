@@ -35,10 +35,11 @@ class CryptopusAdapter
     secret_account = secret.to_account
     secret_account.folder = session_adapter.selected_folder.id
 
-    begin
-      persisted_secret = find_account_by_name(secret.name)
+    persisted_secret = Account.find_by_name_and_folder_id(secret.name,
+                                                          session_adapter.selected_folder.id)
+    if persisted_secret
       patch("accounts/#{persisted_secret.id}", secret_account.to_json)
-    rescue CryptopusAccountNotFoundError
+    else
       post('accounts', secret_account.to_json)
     end
   end

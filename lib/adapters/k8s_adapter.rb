@@ -3,18 +3,18 @@
 require 'tty-command'
 require_relative './cluster_secret_adapter'
 
-class OSEAdapter < ClusterSecretAdapter
+class K8SAdapter < ClusterSecretAdapter
   private
 
   def client
-    'oc'
+    'kubectl'
   end
 
   def client_missing_error
-    OpenshiftClientMissingError
+    KubernetesClientMissingError
   end
 
   def client_not_logged_in_error
-    OpenshiftClientNotLoggedInError
+    KubernetesClientNotLoggedInError
   end
 end

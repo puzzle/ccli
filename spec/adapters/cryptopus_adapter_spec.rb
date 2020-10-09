@@ -306,9 +306,9 @@ describe CryptopusAdapter do
       secret_account.folder = 1
       folder = Folder.new(id: 1, accounts: [secret_account])
       session_adapter = double
-      expect(SessionAdapter).to receive(:new).exactly(:once).and_return(session_adapter)
-      expect(session_adapter).to receive(:selected_folder).and_return(folder)
-      expect(subject).to receive(:find_account_by_name).exactly(:once).and_raise(CryptopusAccountNotFoundError)
+      expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
+      expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
+      expect(Account).to receive(:find_by_name_and_folder_id).exactly(:once)
       expect(subject).to receive(:post)
                      .with('accounts', secret_account.to_json)
                      .exactly(:once)
@@ -324,7 +324,7 @@ describe CryptopusAdapter do
       secret_account = Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: 1)
       folder = Folder.new(id: 1, accounts: [secret_account])
       session_adapter = double
-      expect(SessionAdapter).to receive(:new).exactly(:once).and_return(session_adapter)
+      expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
       expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
       expect(Account).to receive(:find_by_name_and_folder_id).exactly(:once).and_return(secret_account)
       secret = OSESecret.new('spec_secret', {})

@@ -6,6 +6,7 @@ require 'tty-exit'
 require 'tty-logger'
 
 Dir[File.join(__dir__, '**', '*.rb')].sort.each { |file| require file }
+
 # rubocop:disable Metrics/ClassLength
 class CLI
   include Commander::Methods
@@ -138,6 +139,51 @@ class CLI
             log_success "Secret #{secret_account.accountname} was successfully applied"
           end
         end
+      end
+    end
+
+    command :'k8s-secret-pull' do |c|
+      c.syntax = 'cry k8s-secret-pull <secret-name>'
+      c.summary = 'Pulls secret from Kubectl to Cryptopus'
+      c.description = "Pulls the Secret from Kubectl and pushes them to Cryptopus.\n" \
+                      'If a Cryptopus Account in the selected folder using the name ' \
+                      "of the given secret is already present, it will be updated accordingly.\n" \
+                      'If no name is given, it will pull all secrets inside the selected project.'
+
+      c.action do |args|
+        if args.length > 1
+          TTY::Exit.exit_with(:usage_error,
+                              'Only a single or no arguments are allowed')
+        end
+
+        execute_action({ secret_name: args.first }) do
+          if args.empty?
+            cry_adapter.save_secrets(K8SSecret.all)
+            puts 'Saved secrets of current project'
+          elsif args.length == 1
+            cry_adapter.save_secrets([K8SAdapter.find_by_name(args.first)])
+            puts "Saved secret #{args.first}"
+          end
+        end
+      end
+    end
+
+    command :'k8s-secret-push' do |c|
+      c.syntax = 'cry k8s-secret-push <secret-name>'
+      c.summary = 'Pushes secret from Cryptopus to Kubectl'
+      c.description = 'Pushes the Secret to Kubectl by retrieving it from Cryptopus first. ' \
+                      'If a Secret in the selected Kubectl project using the name ' \
+                      'of the given accountname is already present, it will be updated accordingly.'
+
+      c.action do |args|
+        secret_name = args.first
+        TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
+        TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
+        execute_action({ secret_name: secret_name }) do
+          secret_account = cry_adapter.find_account_by_name(secret_name)
+          ose_adapter.insert_secret(secret_account.to_osesecret)
+        end
+        puts 'Secret was successfully applied'
       end
     end
 
