@@ -30,6 +30,11 @@ class CLI
         exit_with_error(:usage_error, 'Token missing') if token.empty?
         execute_action do
           session_adapter.update_session({ encoded_token: token, url: url })
+          renew_auth_token
+
+          # Test authentification by calling teams endpoint
+          Team.all
+
           log_success 'Successfully logged in'
         end
       end
@@ -298,6 +303,10 @@ class CLI
 
   def session_adapter
     @session_adapter ||= SessionAdapter.new
+  end
+
+  def renew_auth_token
+    session_adapter.update_session({ token: cryptopus_adapter.renewed_auth_token })
   end
 end
 # rubocop:enable Metrics/ClassLength
