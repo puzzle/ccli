@@ -52,7 +52,19 @@ class CryptopusAdapter
     secret_account
   end
 
+  def renewed_auth_token
+    json = get("api_users/#{current_user_id}/token")
+    JSON.parse(json)['token']
+  end
+
   private
+
+  def current_user_id
+    users = JSON.parse(get('api_users'), symbolize_names: true)
+    users[:data].find do |user|
+      user[:attributes][:username] == session_adapter.session_data[:username]
+    end[:id]
+  end
 
   def session_adapter
     @session_adapter ||= SessionAdapter.new
