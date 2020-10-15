@@ -163,11 +163,16 @@ class CLI
 
         execute_action({ secret_name: args.first }) do
           if args.empty?
-            cry_adapter.save_secrets(K8SSecret.all)
-            puts 'Saved secrets of current project'
+            logger.info 'Fetching secrets...'
+            K8SSecret.all.each do |secret|
+              logger.info "Saving secret #{secret.name}..."
+              cryptopus_adapter.save_secret(secret)
+              log_success "Saved secret #{secret.name}"
+            end
           elsif args.length == 1
-            cry_adapter.save_secrets([K8SAdapter.find_by_name(args.first)])
-            puts "Saved secret #{args.first}"
+            logger.info "Saving secret #{args.first}..."
+            cryptopus_adapter.save_secret(K8SSecret.find_by_name(args.first))
+            log_success "Saved secret #{args.first}"
           end
         end
       end
@@ -182,13 +187,23 @@ class CLI
 
       c.action do |args|
         secret_name = args.first
-        TTY::Exit.exit_with(:usage_error, 'Secret name is missing') unless secret_name
-        TTY::Exit.exit_with(:usage_error, 'Only one secret can be pushed') if args.length > 1
+        exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
-          secret_account = cry_adapter.find_account_by_name(secret_name)
-          ose_adapter.insert_secret(secret_account.to_osesecret)
+          secret_accounts = if secret_name.nil?
+                              logger.info 'Fetching all accounts in folder...'
+                              session_adapter.selected_folder.accounts
+                            else
+                              logger.info "Fetching account #{secret_name}..."
+                              [cryptopus_adapter.find_account_by_name(secret_name)]
+                            end
+          secret_accounts.each do |account|
+            logger.info "Fetching secret #{account.accountname}..."
+            secret_account = Account.find(account.id)
+            logger.info "Inserting secret #{account.accountname}..."
+            k8s_adapter.insert_secret(secret_account.to_osesecret)
+            log_success "Secret #{secret_account.accountname} was successfully applied"
+          end
         end
-        puts 'Secret was successfully applied'
       end
     end
 
@@ -248,6 +263,10 @@ class CLI
     exit_with_error(:usage_error, 'oc is not installed')
   rescue OpenshiftClientNotLoggedInError
     exit_with_error(:usage_error, 'oc is not logged in')
+  rescue KubernetesClientMissingError
+    exit_with_error(:usage_error, 'kubectl is not installed')
+  rescue KubernetesClientNotLoggedInError
+    exit_with_error(:usage_error, 'kubectl is not logged in')
   rescue CryptopusAccountNotFoundError
     exit_with_error(:usage_error, 'Secret with the given name ' \
                                   "#{options[:secret_name]} was not found")
@@ -303,6 +322,10 @@ class CLI
 
   def session_adapter
     @session_adapter ||= SessionAdapter.new
+  end
+
+  def k8s_adapter
+    @k8s_adapter ||= K8SAdapter.new
   end
 
   def renew_auth_token

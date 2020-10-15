@@ -8,6 +8,8 @@ require 'base64'
 class CryptopusAdapter
 
   def root_url
+    raise SessionMissingError unless session_adapter.session_data[:url]
+
     @root_url ||= "#{session_adapter.session_data[:url]}/api"
   end
 
