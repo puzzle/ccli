@@ -104,12 +104,12 @@ class CLI
             OSESecret.all.each do |secret|
               logger.info "Saving secret #{secret.name}..."
               cryptopus_adapter.save_secret(secret)
-              log_success "Saved secret #{secret.name}"
+              log_success "Saved secret #{secret.name} in Cryptopus"
             end
           elsif args.length == 1
             logger.info "Saving secret #{args.first}..."
             cryptopus_adapter.save_secret(OSESecret.find_by_name(args.first))
-            log_success "Saved secret #{args.first}"
+            log_success "Saved secret #{args.first} in Cryptopus"
           end
         end
       end
@@ -164,12 +164,12 @@ class CLI
             K8SSecret.all.each do |secret|
               logger.info "Saving secret #{secret.name}..."
               cryptopus_adapter.save_secret(secret)
-              log_success "Saved secret #{secret.name}"
+              log_success "Saved secret #{secret.name} in Cryptopus"
             end
           elsif args.length == 1
             logger.info "Saving secret #{args.first}..."
             cryptopus_adapter.save_secret(K8SSecret.find_by_name(args.first))
-            log_success "Saved secret #{args.first}"
+            log_success "Saved secret #{args.first} in Cryptopus"
           end
         end
       end
