@@ -37,7 +37,7 @@ describe CryptopusAdapter do
         }
       }.to_json
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -63,7 +63,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -80,7 +80,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
@@ -133,7 +133,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -154,7 +154,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -171,7 +171,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
@@ -224,7 +224,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(false)
@@ -245,7 +245,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -262,7 +262,7 @@ describe CryptopusAdapter do
       response = double
 
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(false)
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)

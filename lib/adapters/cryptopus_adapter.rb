@@ -88,7 +88,8 @@ class CryptopusAdapter
   end
 
   def send_request(request, uri)
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+    is_ssl_connection = uri.port == 443
+    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: is_ssl_connection) do |http|
       http.request(request)
     end
     raise UnauthorizedError if response.is_a?(Net::HTTPUnauthorized)

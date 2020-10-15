@@ -204,7 +204,7 @@ describe CLI do
       set_command(:account, '1')
       response = double
       expect(Net::HTTP).to receive(:start)
-                       .with('cryptopus.example.com', 443)
+                       .with('cryptopus.example.com', 443, use_ssl: true)
                        .and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
@@ -376,7 +376,7 @@ describe CLI do
 
       response = double
       expect(OSESecret).to receive(:all).and_return([secret])
-      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443).and_return(response)
+      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443, use_ssl: true).and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
@@ -472,7 +472,7 @@ describe CLI do
       set_command(:'ose-secret-push', 'spec_secret')
 
       response = double
-      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443).and_return(response)
+      expect(Net::HTTP).to receive(:start).with('cryptopus.example.com', 443, use_ssl: true).and_return(response)
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)

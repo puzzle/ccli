@@ -24,10 +24,7 @@ class CLI
       c.description = 'Logs in to the ccli'
 
       c.action do |args|
-        exit_with_error(:usage_error, 'Credentials missing') if args.empty?
-        token, url = args.first.split('@')
-        exit_with_error(:usage_error, 'URL missing') unless url
-        exit_with_error(:usage_error, 'Token missing') if token.empty?
+        token, url = extract_login_args(args)
         execute_action do
           session_adapter.update_session({ encoded_token: token, url: url })
           renew_auth_token
@@ -282,6 +279,14 @@ class CLI
   end
   # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
 
+
+  def extract_login_args(args)
+    exit_with_error(:usage_error, 'Credentials missing') if args.empty?
+    token, url = args.first.split('@')
+    exit_with_error(:usage_error, 'URL missing') unless url
+    exit_with_error(:usage_error, 'Token missing') if token.empty?
+    [token, url]
+  end
 
   def extract_use_args(args)
     usage_info = 'Usage: cry use <team/folder>'
