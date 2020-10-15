@@ -8,15 +8,26 @@ Cryptopus Command Line Client
 
 This will install the `cry` command including its dependencies
 
-## Commands
+## Usage
 
-### Help
+### Labeling secret to be synced
+
+So that a secret even gets considered by the `ccli`, you have to add the `cryptopus-sync=true` label to your secret:
+
+**oc:** `oc label secret <secret-name> cryptopus-sync=true`
+
+
+**kubectl:** `kubectl label secret <secret-name> cryptopus-sync=true`
+
+### Commands
+
+#### Help
 
 **Synopsis:** `cry help <command>`
 
 **Summary:** Display global or `<command>` help documentation
 
-### Login
+#### Login
 
 **Synopsis:** `cry login <base64_encoded_token>@<host>`
 
@@ -25,13 +36,13 @@ This will install the `cry` command including its dependencies
 The token has to be base64 encoded of a string constructed like this: `<username>:<auth_token>`
 These are the credentials of the desired api-user inside Cryptopus.
 
-### Logout
+#### Logout
 
 **Synopsis:** `cry logout`
 
 **Summary:** Logs out of the ccli
 
-### Account
+#### Account
 
 **Synopsis:** `cry account <id>`
 
@@ -43,31 +54,31 @@ These are the credentials of the desired api-user inside Cryptopus.
 
 - --password: Only show the password of the account
 
-### Teams
+#### Teams
 
 **Synopsis:** `cry teams`
 
 **Summary:** Lists the accessible teams and their folders.
 
-### Use
+#### Use
 
 **Synopsis:** `cry use <team>/<folder>`
 
 **Summary:** Selects the current team and folder by the given name
 
-### Folder
+#### Folder
 
 **Synopsis:** `cry folder <id>`
 
 **Summary:** Selects the Cryptopus folder by id
 
-### Ose-Secret-Pull
+#### Ose-Secret-Pull
 
 **Synopsis:** `cry ose-secret-pull <secret-name>`
 
 **Summary:** Pulls the secret from Openshift to Cryptopus. If no secret is given, it will pull all secrets.
 
-### Ose-Secret-Push
+#### Ose-Secret-Push
 
 **Synopsis:** `cry ose-secret-push <secret-name>`
 

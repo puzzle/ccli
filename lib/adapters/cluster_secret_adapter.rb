@@ -3,13 +3,18 @@
 require 'tty-command'
 
 class ClusterSecretAdapter
+
+  CCLI_FLAG_LABEL = 'cryptopus-sync'
+
   def fetch_secret(name)
     raise client_missing_error unless client_installed?
     raise client_not_logged_in_error unless client_logged_in?
 
     begin
-      out, _err = cmd.run("#{client} get -o yaml secret #{name}")
-      out
+      out, _err = cmd.run("#{client} get -o yaml secret --field-selector='metadata.name=#{name}' " \
+                          "-l #{CCLI_FLAG_LABEL}=true")
+
+      Psych.load(out)['items'].first.to_yaml
     rescue TTY::Command::ExitError
       raise OpenshiftSecretNotFoundError
     end
@@ -19,9 +24,9 @@ class ClusterSecretAdapter
     raise client_missing_error unless client_installed?
     raise client_not_logged_in_error unless client_logged_in?
 
-    cmd.run("#{client} get secret -o custom-columns=NAME:metadata.name " \
-            '--no-headers=true').map do |secret|
-      fetch_secret(secret)
+    secrets, _err = cmd.run("#{client} get secret -o yaml -l #{CCLI_FLAG_LABEL}=true")
+    Psych.load(secrets)['items'].map do |secret|
+      secret.to_yaml
     end
   end
 

@@ -361,7 +361,8 @@ describe CLI do
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
       expect(positive_result).to receive(:success?).and_return(true).exactly(2).times
-      expect(cmd).to receive(:run).with('oc get -o yaml secret spec_secret').and_raise(exit_error('oc get secret'))
+      expect(cmd).to receive(:run).with("oc get -o yaml secret --field-selector='metadata.name=spec_secret' " \
+                                        "-l cryptopus-sync=true").and_raise(exit_error('oc get secret'))
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }

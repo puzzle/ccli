@@ -28,16 +28,19 @@ describe ClusterSecretAdapter do
       expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
       secret_yaml = {
-        type: 'Opaque',
-        data: {
-          token: 'very secret token'
-        },
-        metadata: {
-          name: 'spec_secret'
-        }
+        'items' => [{
+          type: 'Opaque',
+          data: {
+            token: 'very secret token'
+          },
+          metadata: {
+            name: 'spec_secret'
+          }
+        }]
       }.to_yaml
 
-      expect(cmd).to receive(:run).with('oc get -o yaml secret spec_secret').and_return(secret_yaml)
+      expect(cmd).to receive(:run).with("oc get -o yaml secret --field-selector='metadata.name=spec_secret' " \
+                                        '-l cryptopus-sync=true').and_return([secret_yaml])
 
       result = Psych.load(subject.fetch_secret('spec_secret'), symbolize_names: true)
 
@@ -94,7 +97,7 @@ describe ClusterSecretAdapter do
       expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
       expect(cmd).to receive(:run)
-                 .with('oc get -o yaml secret non_existing_secret')
+        .with("oc get -o yaml secret --field-selector='metadata.name=non_existing_secret' -l cryptopus-sync=true")
                  .and_raise(exit_error('oc get secret'))
 
       expect do
@@ -116,12 +119,11 @@ describe ClusterSecretAdapter do
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
 
-      secrets = ['spec_secret1', 'spec_secret2']
+      secrets = { 
+        'items' => ['spec_secret1', 'spec_secret2']
+      }.to_yaml
 
-      expect(cmd).to receive(:run).with('oc get secret -o custom-columns=NAME:metadata.name --no-headers=true').and_return(secrets)
-
-      expect(subject).to receive(:fetch_secret).with('spec_secret1').exactly(:once)
-      expect(subject).to receive(:fetch_secret).with('spec_secret2').exactly(:once)
+      expect(cmd).to receive(:run).with("oc get secret -o yaml -l cryptopus-sync=true").and_return(secrets)
 
       subject.fetch_all_secrets
     end
