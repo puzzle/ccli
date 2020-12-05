@@ -2,6 +2,7 @@ AllCops:
   DisplayCopNames: true
   Exclude:
     - spec/**/*
+    - ccli.gemspec
 
 Metrics/AbcSize:
   Max: 20
