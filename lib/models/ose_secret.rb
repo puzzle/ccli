@@ -12,10 +12,6 @@ class OSESecret
     OSESecretSerializer.to_account(self)
   end
 
-  def to_yaml
-    OSESecretSerializer.to_yaml(self)
-  end
-
   class << self
     def find_by_name(name)
       OSESecretSerializer.from_yaml(OSEAdapter.new.fetch_secret(name))

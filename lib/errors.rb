@@ -38,3 +38,6 @@ end
 
 class FolderNotFoundError < Error
 end
+
+class NotSecretsDirectoryError < Error
+end

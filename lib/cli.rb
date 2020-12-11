@@ -239,6 +239,46 @@ class CLI
       end
     end
 
+    command :'ose-secret-create' do |c|
+      c.syntax = 'cry ose-secret-create'
+      c.description = 'Create secrets, insert them into Openshift and save to Cryptopus'
+
+      c.action do |args|
+        execute_action do
+          secrets = file_system_adapter(args.first).fetch_secrets
+
+          secrets.each do |secret|
+            logger.info "Inserting secret #{account.accountname}..."
+            ose_adapter.insert_secret(secret)
+            logger.info "Inserted secret #{account.accountname} into Openshift"
+            logger.info "Saving secret #{account.accountname}..."
+            cryptopus_adapter.save_secret(secret)
+            logger.info "Saved secret #{account.accountname} in Cryptopus"
+          end
+        end
+      end
+    end
+
+    command :'k8s-secret-create' do |c|
+      c.syntax = 'cry k8s-secret-create'
+      c.description = 'Create secrets, insert them into Kubernetes and save to Cryptopus'
+
+      c.action do |args|
+        execute_action do
+          secrets = file_system_adapter(args.first).fetch_secrets
+
+          secrets.each do |secret|
+            logger.info "Inserting secret #{account.accountname}..."
+            k8s_adapter.insert_secret(secret)
+            logger.info "Inserted secret #{account.accountname} into Openshift"
+            logger.info "Saving secret #{account.accountname}..."
+            cryptopus_adapter.save_secret(secret)
+            logger.info "Saved secret #{account.accountname} in Cryptopus"
+          end
+        end
+      end
+    end
+
     run!
   end
 
@@ -331,6 +371,10 @@ class CLI
 
   def k8s_adapter
     @k8s_adapter ||= K8SAdapter.new
+  end
+
+  def file_system_adapter(path)
+    @file_system_adapter ||= FileSystemAdapter.new(path)
   end
 
   def renew_auth_token
