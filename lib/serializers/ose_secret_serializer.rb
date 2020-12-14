@@ -16,7 +16,7 @@ class OSESecretSerializer
           'labels' => secret_hash['metadata']['labels']
         }
       }.to_yaml
-      OSESecret.new(secret_hash.dig(:metadata, :name), data.to_s)
+      OSESecret.new(secret_hash['metadata']['name'], data.to_s)
     end
     # rubocop:enable Metrics/MethodLength
 
