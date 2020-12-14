@@ -4,7 +4,7 @@ Cryptopus Command Line Client
 
 ## Installation
 
-`sudo gem install ccli`
+`gem install ccli`
 
 This will install the `cry` command including its dependencies
 
@@ -16,6 +16,8 @@ This will install the `cry` command including its dependencies
 - Sync Secrets from Cryptopus to Openshift/Kubernetes
 
 ## Usage
+
+[Receiving the login token from Cryptopus](docs/get_login_token.md)
 
 ### Labeling secret to be synced
 
