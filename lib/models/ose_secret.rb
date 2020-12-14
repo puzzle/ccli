@@ -17,6 +17,10 @@ class OSESecret
   end
 
   class << self
+    def from_yaml(yaml)
+      OSESecretSerializer.from_yaml(yaml)
+    end
+
     def find_by_name(name)
       OSESecretSerializer.from_yaml(OSEAdapter.new.fetch_secret(name))
     end

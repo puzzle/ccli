@@ -51,7 +51,7 @@ class AccountSerializer
     end
 
     def to_osesecret(account)
-      OSESecret.new(account.accountname, account.ose_secret)
+      OSESecret.from_yaml(account.ose_secret)
     end
   end
 end
