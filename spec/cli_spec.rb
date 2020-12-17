@@ -425,7 +425,8 @@ describe CLI do
       set_command(:'ose-secret-push')
 
       ose_adapter = double
-      accounts = [Account.new(accountname: 'secret1', id: 1), Account.new(accountname: 'secret2', id: 2)]
+      accounts = [Account.new(accountname: 'secret1', ose_secret: { 'metadata' => { 'name' => 'secret1' } }.to_yaml, id: 1),
+                  Account.new(accountname: 'secret2', ose_secret: { 'metadata' => { 'name' => 'secret2' } }.to_yaml, id: 2)]
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
 
       expect(Folder).to receive(:find).with(1).and_return(Folder.new(id: 1, accounts: accounts))
