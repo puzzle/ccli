@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'psych'
+require 'base64'
 
 class OSESecretSerializer
   class << self
@@ -9,7 +10,7 @@ class OSESecretSerializer
       secret_hash = Psych.load(yaml)
       data = {
         'apiVersion' => secret_hash['apiVersion'],
-        'data' => secret_hash['data'],
+        'data' => decoded_data(secret_hash['data']),
         'kind' => secret_hash['kind'],
         'metadata' => {
           'name' => secret_hash['metadata']['name'],
@@ -22,6 +23,14 @@ class OSESecretSerializer
 
     def to_account(secret)
       Account.new(accountname: secret.name, ose_secret: secret.ose_secret, type: 'ose_secret')
+    end
+
+    private
+
+    def decoded_data(data)
+      data.transform_values do |value|
+        Base64.strict_decode64(value)
+      end
     end
   end
 end
