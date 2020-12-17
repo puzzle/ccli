@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
     One of the main functionality is backing up secrets from cluster services (currently: openshift, kubernetes)
     to Cryptopus and restoring them as well.
   EOF
-  s.version       = '0.1.1'
+  s.version       = '0.1.2'
   s.summary       = 'Command line client for the opensource password manager Cryptopus'
   s.license       = 'MIT'
   s.homepage      = 'https://github.com/puzzle/ccli'

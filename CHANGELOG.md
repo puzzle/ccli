@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.2
+
+- Updating docs
+- Bugfixing
+
 ## 0.1.1
 
 - Adding MIT license
