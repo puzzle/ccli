@@ -19,7 +19,13 @@ This will install the `cry` command including its dependencies
 
 [Receiving the login token from Cryptopus](docs/get_login_token.md)
 
-### Labeling secret to be synced
+### Kubernetes/Openshift
+
+#### Required tools
+
+First you'll have to install either [oc](https://docs.openshift.com/container-platform/4.3/cli_reference/openshift_cli/getting-started-cli.html#installing-the-cli) or [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) depending on your usage
+
+#### Labeling secret to be synced
 
 So that a secret even gets considered by the `ccli`, you have to add the `cryptopus-sync=true` label to your secret:
 
