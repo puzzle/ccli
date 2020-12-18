@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+- De- and encode data from secrets
+
 ## 0.1.2
 
 - Updating docs
