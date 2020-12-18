@@ -141,7 +141,7 @@ describe ClusterSecretAdapter do
 
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc get secret').and_return(positive_result)
-      yaml = { apiVersion: 'v1', data: { password: 'very-secret-password' }, metadata: { name: 'spec_secret' } }.to_yaml
+      yaml = { 'apiVersion' => 'v1', 'data' => { 'password' => 'very-secret-password' }, 'metadata' => { 'name' => 'spec_secret' } }.to_yaml
       secret = OSESecret.new('spec_secret', yaml)
 
       expect(cmd).to receive(:run).with('oc delete -f /tmp/spec_secret.yml --ignore-not-found=true')

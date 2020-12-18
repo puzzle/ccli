@@ -35,7 +35,7 @@ class ClusterSecretAdapter
     raise client_not_logged_in_error unless client_logged_in?
 
     File.open("/tmp/#{secret.name}.yml", 'w') do |file|
-      file.write secret.ose_secret
+      file.write secret.to_yaml
     end
 
     cmd.run("#{client} delete -f /tmp/#{secret.name}.yml --ignore-not-found=true")

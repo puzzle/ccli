@@ -4,12 +4,14 @@ describe OSESecretSerializer do
   subject { described_class }
   let(:secret_yaml) do
     {
-      type: 'Opaque',
-      data: {
-        token: 'very secret token'
+      'apiVersion' => 'v1',
+      'data' => {
+        'token' => 'very secret token'
       },
-      metadata: {
-        name: 'spec_secret'
+      'kind' => 'Secret',
+      'metadata' => {
+        'name' => 'spec_secret',
+        'labels' => 'cryptopus-sync=true'
       }
     }.to_yaml
   end

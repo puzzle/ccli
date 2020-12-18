@@ -25,11 +25,29 @@ class OSESecretSerializer
       Account.new(accountname: secret.name, ose_secret: secret.ose_secret, type: 'ose_secret')
     end
 
+    def to_yaml(secret)
+      secret_hash = Psych.load(secret.ose_secret)
+      secret_hash['data'] = encoded_data(secret_hash['data'])
+      secret_hash.to_yaml
+    end
+
     private
 
     def decoded_data(data)
+      return {} unless data
+
       data.transform_values do |value|
         Base64.strict_decode64(value)
+      rescue ArgumentError
+        value
+      end
+    end
+
+    def encoded_data(data)
+      return {} unless data
+
+      data.transform_values do |value|
+        Base64.strict_encode64(value)
       end
     end
   end

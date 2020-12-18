@@ -16,6 +16,16 @@ class OSESecret
     OSESecretSerializer.to_yaml(self)
   end
 
+  private
+
+  def encoded_data(data)
+    data.transform_values do |value|
+      Base64.strict_encode64(value)
+    rescue ArgumentError
+      value
+    end
+  end
+
   class << self
     def from_yaml(yaml)
       OSESecretSerializer.from_yaml(yaml)
