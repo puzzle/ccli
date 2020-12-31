@@ -39,6 +39,25 @@ This will install the `cry` command including its dependencies
 
 Show more specific documentation by calling `cry help <command>`
 
+### Account
+
+#### Retreiving
+
+To retreive account data as yaml:
+
+```
+cry account 42 > account.yaml
+```
+Retreiving account's password and assign it to a variable:
+
+```
+PASSWORD=$(cry account 42 --password)
+```
+
+#### Updating
+
+not supported yet by ccli
+
 ### Kubernetes/Openshift
 
 #### Required tools
