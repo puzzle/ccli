@@ -1,6 +1,6 @@
 # ccli
 
-Cryptopus Command Line Client
+Command Line Client for [Cryptopus](https://github.com/puzzle/cryptopus) 
 
 ## Installation
 
