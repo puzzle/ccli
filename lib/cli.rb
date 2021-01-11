@@ -27,6 +27,7 @@ class CLI
         token, url = extract_login_args(args)
         execute_action do
           session_adapter.update_session({ encoded_token: token, url: url })
+          renew_auth_token
 
           # Test authentification by calling teams endpoint
           Team.all
@@ -330,6 +331,10 @@ class CLI
 
   def k8s_adapter
     @k8s_adapter ||= K8SAdapter.new
+  end
+
+  def renew_auth_token
+    session_adapter.update_session({ token: cryptopus_adapter.renewed_auth_token })
   end
 end
 # rubocop:enable Metrics/ClassLength
