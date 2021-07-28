@@ -1,6 +1,6 @@
 # ccli
 
-Command Line Client for [Cryptopus](https://github.com/puzzle/cryptopus) 
+Command Line Client for [Cryptopus](https://github.com/puzzle/cryptopus)
 
 ## Installation
 
@@ -24,24 +24,34 @@ This will install the `cry` command including its dependencies
 ```
   Command:           Summary:
 
-  account            Fetches an account by the given id          
-  folder             Selects the Cryptopus folder by id          
-  help               Display global or [command] help documentation              
-  k8s-secret-pull    Pulls secret from Kubectl to Cryptopus              
-  k8s-secret-push    Pushes secret from Cryptopus to Kubectl             
-  login              Logs in to the ccli         
-  logout             Logs out of the ccli                
-  ose-secret-pull    Pulls secret from Openshift to Cryptopus            
-  ose-secret-push    Pushes secret from Cryptopus to Openshift           
-  teams              Lists all available teams           
-  use                Select the current folder   
+  account            Fetches an account by the given id
+  folder             Selects the Cryptopus folder by id
+  help               Display global or [command] help documentation
+  k8s-secret-pull    Pulls secret from Kubectl to Cryptopus
+  k8s-secret-push    Pushes secret from Cryptopus to Kubectl
+  login              Logs in to the ccli
+  logout             Logs out of the ccli
+  ose-secret-pull    Pulls secret from Openshift to Cryptopus
+  ose-secret-push    Pushes secret from Cryptopus to Openshift
+  teams              Lists all available teams
+  use                Select the current folder
 ```
 
 Show more specific documentation by calling `cry help <command>`
 
 ### Account
 
-#### Retreiving
+#### Logging in
+
+Use the ccli login copy button from the UI or do it manually:
+
+    user=<my-user>
+    token=<my-token>
+    url=https://cryptopus.example.com
+
+    cry login $(echo -n "$user:$token" | base64)@$url
+
+#### Retrieving
 
 To retreive account data as yaml:
 
@@ -90,3 +100,7 @@ You will need the following things properly installed on your computer:
 - `rvm install 2.6.0`
 - `gem install bundler`
 - `bundle install`
+
+### Running tests
+
+`bundle exec rspec`
