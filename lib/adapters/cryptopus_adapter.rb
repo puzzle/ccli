@@ -34,24 +34,23 @@ class CryptopusAdapter
   end
 
   def save_secret(secret)
-    secret_account = secret.to_account
-    secret_account.folder = session_adapter.selected_folder.id
-
-    persisted_secret = Account.find_by_name_and_folder_id(secret.name,
-                                                          session_adapter.selected_folder.id)
+    secret_encryptable = secret.to_encryptable
+    secret_encryptable.folder = session_adapter.selected_folder.id
+    persisted_secret = Encryptable.find_by_name_and_folder_id(secret.name,
+                                                              session_adapter.selected_folder.id)
     if persisted_secret
-      patch("accounts/#{persisted_secret.id}", secret_account.to_json)
+      patch("encryptables/#{persisted_secret.id}", secret_encryptable.to_json)
     else
-      post('accounts', secret_account.to_json)
+      post('encryptables', secret_encryptable.to_json)
     end
   end
 
-  def find_account_by_name(name)
-    secret_account = Account.find_by_name_and_folder_id(name, session_adapter.selected_folder.id)
+  def find_encryptable_by_name(name)
+    secret_encryptable = Encryptable.find_by_name_and_folder_id(name, session_adapter.selected_folder.id)
 
-    raise CryptopusAccountNotFoundError unless secret_account
+    raise CryptopusEncryptableNotFoundError unless secret_encryptable
 
-    secret_account
+    secret_encryptable
   end
 
   def renewed_auth_token

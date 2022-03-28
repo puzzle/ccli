@@ -30,7 +30,7 @@ end
 class NoFolderSelectedError < Error
 end
 
-class CryptopusAccountNotFoundError < Error
+class CryptopusEncryptableNotFoundError < Error
 end
 
 class TeamNotFoundError < Error

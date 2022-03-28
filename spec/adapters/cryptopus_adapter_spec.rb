@@ -19,7 +19,7 @@ describe CryptopusAdapter do
       FileUtils.rm_r(File.expand_path('spec/tmp')) if File.exist?('../tmp/.ccli')
     end
 
-    it 'returns account hash from http response' do
+    it 'returns encryptable hash from http response' do
       encoded_token = Base64.encode64('bob;1234')
 
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com'})
@@ -29,9 +29,9 @@ describe CryptopusAdapter do
         data: {
           id: 1,
           attributes: {
-            accountname: 'spec_account',
+            name: 'spec_encryptable',
             cleartext_password: 'gfClNjq21D',
-            cleartext_username: 'ccli_account',
+            cleartext_username: 'ccli_encryptable',
             type: 'credentials'
           }
         }
@@ -44,13 +44,13 @@ describe CryptopusAdapter do
 
       expect(response).to receive(:body).and_return(json_response)
 
-      account = JSON.parse(subject.get('accounts/3'), symbolize_names: true)
+      encryptable = JSON.parse(subject.get('encryptables/3'), symbolize_names: true)
 
-      data = account[:data]
+      data = encryptable[:data]
       attrs = data[:attributes]
       expect(data[:id]).to eq(1)
-      expect(attrs[:accountname]).to eq('spec_account')
-      expect(attrs[:cleartext_username]).to eq('ccli_account')
+      expect(attrs[:name]).to eq('spec_encryptable')
+      expect(attrs[:cleartext_username]).to eq('ccli_encryptable')
       expect(attrs[:cleartext_password]).to eq('gfClNjq21D')
       expect(attrs[:type]).to eq('credentials')
     end
@@ -68,7 +68,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect do
-        subject.get('accounts/3')
+        subject.get('encryptables/3')
       end.to raise_error(UnauthorizedError)
     end
     
@@ -86,7 +86,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
 
       expect do
-        subject.get('accounts/3')
+        subject.get('encryptables/3')
       end.to raise_error(ForbiddenError)
     end
     
@@ -96,7 +96,7 @@ describe CryptopusAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
-        subject.get('accounts/3')
+        subject.get('encryptables/3')
       end.to raise_error(SocketError)
     end
     
@@ -104,7 +104,7 @@ describe CryptopusAdapter do
       FileUtils.rm_r(File.expand_path('spec/tmp'))
 
       expect do
-        subject.get('accounts/3')
+        subject.get('encryptables/3')
       end.to raise_error(SessionMissingError)
     end
   end
@@ -143,7 +143,7 @@ describe CryptopusAdapter do
                      .and_call_original
       expect(response).to receive(:body).and_return({}.to_json)
 
-      subject.post('accounts', json_body)
+      subject.post('encryptables', json_body)
     end
     
     it 'raises error if unauthorized' do
@@ -159,7 +159,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect do
-        subject.post('accounts', { attrs: 'name' })
+        subject.post('encryptables', { attrs: 'name' })
       end.to raise_error(UnauthorizedError)
     end
     
@@ -177,7 +177,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
 
       expect do
-        subject.post('accounts', { attrs: 'name' })
+        subject.post('encryptables', { attrs: 'name' })
       end.to raise_error(ForbiddenError)
     end
     
@@ -187,7 +187,7 @@ describe CryptopusAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
-        subject.post('accounts', { attrs: 'name' })
+        subject.post('encryptables', { attrs: 'name' })
       end.to raise_error(SocketError)
     end
     
@@ -195,7 +195,7 @@ describe CryptopusAdapter do
       FileUtils.rm_r(File.expand_path('spec/tmp'))
 
       expect do
-        subject.post('accounts', { attrs: 'name' })
+        subject.post('encryptables', { attrs: 'name' })
       end.to raise_error(SessionMissingError)
     end
   end
@@ -234,7 +234,7 @@ describe CryptopusAdapter do
                      .and_call_original
       expect(response).to receive(:body).and_return({}.to_json)
 
-      subject.patch('accounts', json_body)
+      subject.patch('encryptables', json_body)
     end
     
     it 'raises error if unauthorized' do
@@ -250,7 +250,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPUnauthorized).and_return(true)
 
       expect do
-        subject.patch('accounts', { attrs: 'name' })
+        subject.patch('encryptables', { attrs: 'name' })
       end.to raise_error(UnauthorizedError)
     end
     
@@ -268,7 +268,7 @@ describe CryptopusAdapter do
       expect(response).to receive(:is_a?).with(Net::HTTPForbidden).and_return(true)
 
       expect do
-        subject.patch('accounts', { attrs: 'name' })
+        subject.patch('encryptables', { attrs: 'name' })
       end.to raise_error(ForbiddenError)
     end
     
@@ -278,7 +278,7 @@ describe CryptopusAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com' })
 
       expect do
-        subject.patch('accounts', { attrs: 'name' })
+        subject.patch('encryptables', { attrs: 'name' })
       end.to raise_error(SocketError)
     end
     
@@ -286,7 +286,7 @@ describe CryptopusAdapter do
       FileUtils.rm_r(File.expand_path('spec/tmp'))
 
       expect do
-        subject.patch('accounts', { attrs: 'name' })
+        subject.patch('encryptables', { attrs: 'name' })
       end.to raise_error(SessionMissingError)
     end
   end
@@ -302,15 +302,15 @@ describe CryptopusAdapter do
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
 
       secret = OSESecret.new('spec_secret', {})
-      secret_account = secret.to_account
+      secret_account = secret.to_encryptable
       secret_account.folder = 1
-      folder = Folder.new(id: 1, accounts: [secret_account])
+      folder = Folder.new(id: 1, encryptables: [secret_account])
       session_adapter = double
       expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
       expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
-      expect(Account).to receive(:find_by_name_and_folder_id).exactly(:once)
+      expect(Encryptable).to receive(:find_by_name_and_folder_id).exactly(:once)
       expect(subject).to receive(:post)
-                     .with('accounts', secret_account.to_json)
+                     .with('encryptables', secret_account.to_json)
                      .exactly(:once)
                      .and_return([])
 
@@ -321,17 +321,17 @@ describe CryptopusAdapter do
       encoded_token = Base64.encode64('bob;1234')
 
       session_adapter.update_session({ encoded_token: encoded_token, url: 'https://cryptopus.example.com', folder: '1' })
-      secret_account = Account.new(accountname: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: 1)
-      folder = Folder.new(id: 1, accounts: [secret_account])
+      secret_account = Encryptable.new(name: 'spec_secret', ose_secret: 'pass', type: 'ose_secret', id: 1)
+      folder = Folder.new(id: 1, encryptables: [secret_account])
       session_adapter = double
       expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
       expect(session_adapter).to receive(:selected_folder).at_least(:once).and_return(folder)
-      expect(Account).to receive(:find_by_name_and_folder_id).exactly(:once).and_return(secret_account)
+      expect(Encryptable).to receive(:find_by_name_and_folder_id).exactly(:once).and_return(secret_account)
       secret = OSESecret.new('spec_secret', {})
-      secret_account = secret.to_account
+      secret_account = secret.to_encryptable
       secret_account.folder = 1
       expect(subject).to receive(:patch)
-                     .with('accounts/1', secret_account.to_json)
+                     .with('encryptables/1', secret_account.to_json)
                      .exactly(:once)
 
       subject.save_secret(secret)
