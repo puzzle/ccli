@@ -6,7 +6,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 Gem::Specification.new do |s|
   s.name          = 'ccli'
   s.description   = <<-EOF
-    CCLI is the Cryptopus Command Line Interface. It allows to fetch account data and list teams from Cryptopus.
+    CCLI is the Cryptopus Command Line Interface. It allows to fetch encryptable data and list teams from Cryptopus.
     One of the main functionality is backing up secrets from cluster services (currently: openshift, kubernetes)
     to Cryptopus and restoring them as well.
   EOF

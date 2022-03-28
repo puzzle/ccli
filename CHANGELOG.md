@@ -1,5 +1,9 @@
 # Changelog
 
+# 1.0.1
+
+- Rename Account to Encryptable
+
 ## 1.0.0
 
 - De- and encode data from secrets

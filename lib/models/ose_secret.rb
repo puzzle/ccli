@@ -8,8 +8,8 @@ class OSESecret
     @ose_secret = ose_secret
   end
 
-  def to_account
-    OSESecretSerializer.to_account(self)
+  def to_encryptable
+    OSESecretSerializer.to_encryptable(self)
   end
 
   def to_yaml

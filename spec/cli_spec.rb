@@ -385,12 +385,12 @@ describe CLI do
 
       cryptopus_adapter = double
       ose_adapter = double
-      account = Account.new(accountname: 'spec_secret', id: 1)
+      account = Encryptable.new(accountname: 'spec_secret', id: 1)
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cryptopus_adapter).to receive(:find_account_by_name).with('spec_secret').and_return(account)
-      expect(Account).to receive(:find).with(1).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_encryptable_by_name).with('spec_secret').and_return(account)
+      expect(Encryptable).to receive(:find).with(1).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
       expect { subject.run }
         .to output(/Secret spec_secret was successfully applied/)
@@ -403,14 +403,14 @@ describe CLI do
       set_command(:'ose-secret-push')
 
       ose_adapter = double
-      accounts = [Account.new(accountname: 'secret1', ose_secret: { 'metadata' => { 'name' => 'secret1' } }.to_yaml, id: 1),
-                  Account.new(accountname: 'secret2', ose_secret: { 'metadata' => { 'name' => 'secret2' } }.to_yaml, id: 2)]
+      encryptables = [Encryptable.new(accountname: 'secret1', ose_secret: { 'metadata' => { 'name' => 'secret1' } }.to_yaml, id: 1),
+                      Encryptable.new(accountname: 'secret2', ose_secret: { 'metadata' => { 'name' => 'secret2' } }.to_yaml, id: 2)]
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
 
-      expect(Folder).to receive(:find).with(1).and_return(Folder.new(id: 1, accounts: accounts))
+      expect(Folder).to receive(:find).with(1).and_return(Folder.new(id: 1, encryptables: encryptables))
 
-      expect(Account).to receive(:find).with(1).exactly(:once).and_return(accounts[0])
-      expect(Account).to receive(:find).with(2).exactly(:once).and_return(accounts[1])
+      expect(Encryptable).to receive(:find).with(1).exactly(:once).and_return(encryptables[0])
+      expect(Encryptable).to receive(:find).with(2).exactly(:once).and_return(encryptables[1])
       expect(ose_adapter).to receive(:insert_secret).exactly(:twice)
 
       expect { subject.run }
@@ -425,13 +425,13 @@ describe CLI do
 
       cryptopus_adapter = double
       ose_adapter = double
-      account = Account.new(id: 1)
+      account = Encryptable.new(id: 1)
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_encryptable_by_name).and_return(account)
       expect(ose_adapter).to receive(:insert_secret)
-      expect(Account).to receive(:find).and_return(account)
+      expect(Encryptable).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect { subject.run }.to output(/Only one secret can be pushed/).to_stderr
@@ -476,18 +476,18 @@ describe CLI do
 
       cryptopus_adapter = double
       ose_adapter = OSEAdapter.new
-      account = Account.new(id: 1)
+      account = Encryptable.new(id: 1)
       cmd = double
       negative_result = double
 
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_encryptable_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd)
       expect(cmd).to receive(:run!).with('which oc').and_return(negative_result)
       expect(negative_result).to receive(:success?).and_return(false)
-      expect(Account).to receive(:find).and_return(account)
+      expect(Encryptable).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -500,7 +500,7 @@ describe CLI do
 
       cryptopus_adapter = double
       ose_adapter = OSEAdapter.new
-      account = Account.new(id: 1)
+      account = Encryptable.new(id: 1)
       cmd = double
       negative_result = double
       positive_result = double
@@ -508,13 +508,13 @@ describe CLI do
       expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       expect(OSEAdapter).to receive(:new).and_return(ose_adapter)
       expect(account).to receive(:to_osesecret).and_return(secret)
-      expect(cryptopus_adapter).to receive(:find_account_by_name).and_return(account)
+      expect(cryptopus_adapter).to receive(:find_encryptable_by_name).and_return(account)
       expect(ose_adapter).to receive(:cmd).and_return(cmd).exactly(2).times
       expect(cmd).to receive(:run!).with('which oc').and_return(positive_result)
       expect(cmd).to receive(:run!).with('oc get secret').and_return(negative_result)
       expect(positive_result).to receive(:success?).and_return(true)
       expect(negative_result).to receive(:success?).and_return(false)
-      expect(Account).to receive(:find).and_return(account)
+      expect(Encryptable).to receive(:find).and_return(account)
 
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect{ subject.run }
@@ -527,7 +527,7 @@ describe CLI do
       select_folder(1)
       set_command(:'ose-secret-push', 'spec_secret')
 
-      expect(Account).to receive(:find_by_name_and_folder_id).with('spec_secret', 1)
+      expect(Encryptable).to receive(:find_by_name_and_folder_id).with('spec_secret', 1)
       expect(Folder).to receive(:find).and_return(Folder.new(id: 1))
 
       expect(Kernel).to receive(:exit).with(usage_error_code)

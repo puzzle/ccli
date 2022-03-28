@@ -21,8 +21,8 @@ class OSESecretSerializer
     end
     # rubocop:enable Metrics/MethodLength
 
-    def to_account(secret)
-      Account.new(accountname: secret.name, ose_secret: secret.ose_secret, type: 'ose_secret')
+    def to_encryptable(secret)
+      Encryptable.new(name: secret.name, ose_secret: secret.ose_secret, type: 'ose_secret')
     end
 
     def to_yaml(secret)

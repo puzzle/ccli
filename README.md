@@ -10,7 +10,7 @@ This will install the `cry` command including its dependencies
 
 ## Features
 
-- Fetch account data from Cryptopus
+- Fetch encryptable data from Cryptopus
 - List accessable teams in Cryptopus
 - Sync Openshift/Kubernetes Secrets to Cryptopus
 - Sync Secrets from Cryptopus to Openshift/Kubernetes
@@ -24,7 +24,7 @@ This will install the `cry` command including its dependencies
 ```
   Command:           Summary:
 
-  account            Fetches an account by the given id
+  encryptable            Fetches an encryptable by the given id
   folder             Selects the Cryptopus folder by id
   help               Display global or [command] help documentation
   k8s-secret-pull    Pulls secret from Kubectl to Cryptopus
@@ -53,15 +53,15 @@ Use the ccli login copy button from the UI or do it manually:
 
 #### Retrieving
 
-To retreive account data as yaml:
+To retreive encryptable data as yaml:
 
 ```
-cry account 42 > account.yaml
+cry encryptable 42 > encryptable.yaml
 ```
-Retreiving account's password and assign it to a variable:
+Retreiving encryptable's password and assign it to a variable:
 
 ```
-PASSWORD=$(cry account 42 --password)
+PASSWORD=$(cry encryptable 42 --password)
 ```
 
 #### Updating
