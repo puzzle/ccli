@@ -14,7 +14,7 @@ class CLI
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'cry - cryptopus cli'
-    program :version, '1.0.0'
+    program :version, '1.1.0'
     program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
@@ -100,9 +100,7 @@ class CLI
         execute_action({ secret_name: args.first }) do
           if args.empty?
             logger.info 'Fetching secrets...'
-            data = File.open('/home/lbruegger/git/ccli/lib/secret.yaml').read
-            secret = [OSESecret.new('Example secret', data.to_yaml)]
-            secret.each do |secret|
+            OSESecret.all.each do |secret|
               logger.info "Saving secret #{secret.name}..."
               cryptopus_adapter.save_secret(secret)
               log_success "Saved secret #{secret.name} in Cryptopus"
