@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+- Rename Account to Encryptable to support Cryptopus > 4.2
+
 ## 1.0.1
 
 - Reset api user token after login
