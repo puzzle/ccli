@@ -31,9 +31,12 @@ describe CLI do
       set_command(:login)
 
       session_adapter = SessionAdapter.new
+      cryptopus_adapter = double
       expect(Kernel).to receive(:exit).with(usage_error_code)
       expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
       allow_any_instance_of(NilClass).to receive(:split).and_return(["a", "b"])
+      expect(cryptopus_adapter).to receive(:renewed_auth_token)
       allow(session_adapter).to receive(:update_session)
       allow(session_adapter).to receive(:update_session)
       expect{ subject.run }
@@ -45,7 +48,10 @@ describe CLI do
       set_command(:login, 'WEj2eCJnwKbjw@')
 
       session_adapter = SessionAdapter.new
+      cryptopus_adapter = double
       expect(SessionAdapter).to receive(:new).at_least(:once).and_return(session_adapter)
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:renewed_auth_token)
       allow(session_adapter).to receive(:update_session)
       allow(session_adapter).to receive(:update_session)
 
@@ -58,14 +64,30 @@ describe CLI do
     it 'exits with usage error if token missing' do
       set_command(:login, '@https://cryptopus.example.com')
 
-      expect(Kernel).to receive(:exit).with(usage_error_code).exactly(1).times
+      expect(Kernel).to receive(:exit).with(usage_error_code).exactly(2).times
       expect{ subject.run }
         .to output(/Token missing/)
         .to_stderr
     end
 
+    it 'exits with usage error if authentification test returns 401' do
+      set_command(:login, 'WEj2eCJnwKbjw@https://cryptopus.example.com')
+
+
+      expect(subject).to receive(:renew_auth_token)
+      expect(Team).to receive(:all).and_raise(UnauthorizedError)
+      expect(Kernel).to receive(:exit).with(usage_error_code).exactly(:once)
+      expect{ subject.run }
+        .to output(/Authorization failed/)
+        .to_stderr
+    end
+
     it 'exits successfully when url and token given' do
       set_command(:login, 'WEj2eCJnwKbjw@https://cryptopus.example.com')
+
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:renewed_auth_token)
 
       expect{ subject.run }
         .to output(/Successfully logged in/)

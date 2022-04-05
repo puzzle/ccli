@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Reset api user token after login
+
 ## 1.0.0
 
 - De- and encode data from secrets

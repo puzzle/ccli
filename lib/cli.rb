@@ -14,7 +14,7 @@ class CLI
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'cry - cryptopus cli'
-    program :version, '1.0.0'
+    program :version, '1.0.1'
     program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
@@ -27,6 +27,7 @@ class CLI
         token, url = extract_login_args(args)
         execute_action do
           session_adapter.update_session({ encoded_token: token, url: url })
+          renew_auth_token
 
           # Test authentification by calling teams endpoint
           Team.all
@@ -330,6 +331,10 @@ class CLI
 
   def k8s_adapter
     @k8s_adapter ||= K8SAdapter.new
+  end
+
+  def renew_auth_token
+    session_adapter.update_session({ token: cryptopus_adapter.renewed_auth_token })
   end
 end
 # rubocop:enable Metrics/ClassLength
