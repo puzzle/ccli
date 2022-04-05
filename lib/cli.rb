@@ -14,7 +14,7 @@ class CLI
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'cry - cryptopus cli'
-    program :version, '1.0.0'
+    program :version, '1.0.1'
     program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
