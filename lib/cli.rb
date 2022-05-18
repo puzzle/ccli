@@ -14,7 +14,7 @@ class CLI
   # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
   def run
     program :name, 'cry - cryptopus cli'
-    program :version, '1.0.1'
+    program :version, '1.1.0'
     program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
@@ -49,20 +49,20 @@ class CLI
       end
     end
 
-    command :account do |c|
-      c.syntax = 'cry account <id> [options]'
-      c.description = 'Fetches an account by the given id'
+    command :encryptable do |c|
+      c.syntax = 'cry encryptable <id> [options]'
+      c.description = 'Fetches an encryptable by the given id'
       c.option '--username', String, 'Only show the username of the user'
       c.option '--password', String, 'Only show the password of the user'
 
       c.action do |args, options|
         exit_with_error(:usage_error, 'id missing') if args.empty?
         execute_action do
-          logger.info 'Fetching account...'
-          account = Account.find(args.first)
-          out = account.username if options.username
-          out = account.password if options.password
-          puts out || account.to_yaml
+          logger.info 'Fetching encryptable...'
+          encryptable = Encryptable.find(args.first)
+          out = encryptable.username if options.username
+          out = encryptable.password if options.password
+          puts out || encryptable.to_yaml
         end
       end
     end
@@ -120,25 +120,25 @@ class CLI
       c.summary = 'Pushes secret from Cryptopus to Openshift'
       c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
                       'If a Secret in the selected Openshift project using the name ' \
-                      'of the given accountname is already present, it will be updated accordingly.'
+                      'of the given name is already present, it will be updated accordingly.'
 
       c.action do |args|
         secret_name = args.first
         exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
-          secret_accounts = if secret_name.nil?
-                              logger.info 'Fetching all accounts in folder...'
-                              session_adapter.selected_folder.accounts
+          secret_encryptables = if secret_name.nil?
+                              logger.info 'Fetching all encryptables in folder...'
+                              session_adapter.selected_folder.encryptables
                             else
-                              logger.info "Fetching account #{secret_name}..."
-                              [cryptopus_adapter.find_account_by_name(secret_name)]
+                              logger.info "Fetching encryptable #{secret_name}..."
+                              [cryptopus_adapter.find_encryptable_by_name(secret_name)]
                             end
-          secret_accounts.each do |account|
-            logger.info "Fetching secret #{account.accountname}..."
-            secret_account = Account.find(account.id)
-            logger.info "Inserting secret #{account.accountname}..."
-            ose_adapter.insert_secret(secret_account.to_osesecret)
-            log_success "Secret #{secret_account.accountname} was successfully applied"
+          secret_encryptables.each do |encryptable|
+            logger.info "Fetching secret #{encryptable.name}..."
+            secret_encryptable = Encryptable.find(encryptable.id)
+            logger.info "Inserting secret #{encryptable.name}..."
+            ose_adapter.insert_secret(secret_encryptable.to_osesecret)
+            log_success "Secret #{secret_encryptable.name} was successfully applied"
           end
         end
       end
@@ -148,7 +148,7 @@ class CLI
       c.syntax = 'cry k8s-secret-pull <secret-name>'
       c.summary = 'Pulls secret from Kubectl to Cryptopus'
       c.description = "Pulls the Secret from Kubectl and pushes them to Cryptopus.\n" \
-                      'If a Cryptopus Account in the selected folder using the name ' \
+                      'If a Cryptopus Encryptable in the selected folder using the name ' \
                       "of the given secret is already present, it will be updated accordingly.\n" \
                       'If no name is given, it will pull all secrets inside the selected project.'
 
@@ -180,25 +180,24 @@ class CLI
       c.summary = 'Pushes secret from Cryptopus to Kubectl'
       c.description = 'Pushes the Secret to Kubectl by retrieving it from Cryptopus first. ' \
                       'If a Secret in the selected Kubectl project using the name ' \
-                      'of the given accountname is already present, it will be updated accordingly.'
+                      'of the given name is already present, it will be updated accordingly.'
 
       c.action do |args|
         secret_name = args.first
         exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
         execute_action({ secret_name: secret_name }) do
-          secret_accounts = if secret_name.nil?
-                              logger.info 'Fetching all accounts in folder...'
-                              session_adapter.selected_folder.accounts
+          secret_encryptables = if secret_name.nil?
+                              logger.info 'Fetching all encryptables in folder...'
+                              session_adapter.selected_folder.encryptables
                             else
-                              logger.info "Fetching account #{secret_name}..."
-                              [cryptopus_adapter.find_account_by_name(secret_name)]
+                              logger.info "Fetching encryptable #{secret_name}..."
+                              [cryptopus_adapter.find_encryptable_by_name(secret_name)]
                             end
-          secret_accounts.each do |account|
-            logger.info "Fetching secret #{account.accountname}..."
-            secret_account = Account.find(account.id)
-            logger.info "Inserting secret #{account.accountname}..."
-            k8s_adapter.insert_secret(secret_account.to_osesecret)
-            log_success "Secret #{secret_account.accountname} was successfully applied"
+          secret_encryptables.each do |encryptable|
+            secret_encryptable = Encryptable.find(encryptable.id)
+            logger.info "Inserting secret #{encryptable.name}..."
+            k8s_adapter.insert_secret(secret_encryptable.to_osesecret)
+            log_success "Secret #{secret_encryptable.name} was successfully applied"
           end
         end
       end
@@ -264,7 +263,7 @@ class CLI
     exit_with_error(:usage_error, 'kubectl is not installed')
   rescue KubernetesClientNotLoggedInError
     exit_with_error(:usage_error, 'kubectl is not logged in')
-  rescue CryptopusAccountNotFoundError
+  rescue CryptopusEncryptableNotFoundError
     exit_with_error(:usage_error, 'Secret with the given name ' \
                                   "#{options[:secret_name]} was not found")
   rescue OpenshiftSecretNotFoundError

@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
 class Folder
-  attr_reader :name, :id, :accounts
+  attr_reader :name, :id, :encryptables
 
-  def initialize(name: nil, id: nil, accounts: [])
+  def initialize(name: nil, id: nil, encryptables: [])
     @name = name
     @id = id
-    @accounts = accounts
+    @encryptables = encryptables
   end
 
   class << self
@@ -15,11 +15,11 @@ class Folder
                         symbolize_names: true)
       included = json[:included] || []
       name = json[:data][:attributes][:name]
-      accounts = included.map do |record|
-        Account.from_json(record.to_json) if %w[account_ose_secrets
-                                                account_credentials].include? record[:type]
+      encryptables = included.map do |record|
+        Encryptable.from_json(record.to_json) if %w[encryptable_ose_secrets
+                                                encryptable_credentials].include? record[:type]
       end.compact
-      Folder.new(id: id, name: name, accounts: accounts)
+      Folder.new(id: id, name: name, encryptables: encryptables)
     end
   end
 end
