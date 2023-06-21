@@ -1,16 +1,15 @@
 # frozen_string_literal: true
 
 class Encryptable
-  attr_reader :id, :name, :username, :password, :type, :ose_secret
+  attr_reader :id, :name, :username, :password, :type
   attr_accessor :folder
 
   def initialize(name: nil, username: nil, password: nil,
-                 ose_secret: nil, type: nil, id: nil)
+                 type: nil, id: nil)
     @id = id
     @name = name
     @username = username
     @password = password
-    @ose_secret = ose_secret
     @type = type || 'credentials'
   end
 
@@ -20,10 +19,6 @@ class Encryptable
 
   def to_yaml
     EncryptableSerializer.to_yaml(self)
-  end
-
-  def to_osesecret
-    EncryptableSerializer.to_osesecret(self)
   end
 
   class << self

@@ -15,7 +15,7 @@ class CLI
   def run
     program :name, 'cry - cryptopus cli'
     program :version, '1.1.0'
-    program :description, 'CLI tool to manage Openshift Secrets via Cryptopus'
+    program :description, 'CLI tool to read encryptables via Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
 
@@ -84,125 +84,6 @@ class CLI
       end
     end
 
-    command :'ose-secret-pull' do |c|
-      c.syntax = 'cry ose-secret-pull <secret-name>'
-      c.summary = 'Pulls secret from Openshift to Cryptopus'
-      c.description = "Pulls the Secret from Openshift and pushes them to Cryptopus.\n" \
-                      'If a Cryptopus Account in the selected folder using the name ' \
-                      "of the given secret is already present, it will be updated accordingly.\n" \
-                      'If no name is given, it will pull all secrets inside the selected project.'
-
-      c.action do |args|
-        if args.length > 1
-          exit_with_error(:usage_error,
-                          'Only a single or no arguments are allowed')
-        end
-
-        execute_action({ secret_name: args.first }) do
-          if args.empty?
-            logger.info 'Fetching secrets...'
-            OSESecret.all.each do |secret|
-              logger.info "Saving secret #{secret.name}..."
-              cryptopus_adapter.save_secret(secret)
-              log_success "Saved secret #{secret.name} in Cryptopus"
-            end
-          elsif args.length == 1
-            logger.info "Saving secret #{args.first}..."
-            cryptopus_adapter.save_secret(OSESecret.find_by_name(args.first))
-            log_success "Saved secret #{args.first} in Cryptopus"
-          end
-        end
-      end
-    end
-
-    command :'ose-secret-push' do |c|
-      c.syntax = 'cry ose-secret-push <secret-name>'
-      c.summary = 'Pushes secret from Cryptopus to Openshift'
-      c.description = 'Pushes the Secret to Openshift by retrieving it from Cryptopus first. ' \
-                      'If a Secret in the selected Openshift project using the name ' \
-                      'of the given name is already present, it will be updated accordingly.'
-
-      c.action do |args|
-        secret_name = args.first
-        exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
-        execute_action({ secret_name: secret_name }) do
-          secret_encryptables = if secret_name.nil?
-                              logger.info 'Fetching all encryptables in folder...'
-                              session_adapter.selected_folder.encryptables
-                            else
-                              logger.info "Fetching encryptable #{secret_name}..."
-                              [cryptopus_adapter.find_encryptable_by_name(secret_name)]
-                            end
-          secret_encryptables.each do |encryptable|
-            logger.info "Fetching secret #{encryptable.name}..."
-            secret_encryptable = Encryptable.find(encryptable.id)
-            logger.info "Inserting secret #{encryptable.name}..."
-            ose_adapter.insert_secret(secret_encryptable.to_osesecret)
-            log_success "Secret #{secret_encryptable.name} was successfully applied"
-          end
-        end
-      end
-    end
-
-    command :'k8s-secret-pull' do |c|
-      c.syntax = 'cry k8s-secret-pull <secret-name>'
-      c.summary = 'Pulls secret from Kubectl to Cryptopus'
-      c.description = "Pulls the Secret from Kubectl and pushes them to Cryptopus.\n" \
-                      'If a Cryptopus Encryptable in the selected folder using the name ' \
-                      "of the given secret is already present, it will be updated accordingly.\n" \
-                      'If no name is given, it will pull all secrets inside the selected project.'
-
-      c.action do |args|
-        if args.length > 1
-          TTY::Exit.exit_with(:usage_error,
-                              'Only a single or no arguments are allowed')
-        end
-
-        execute_action({ secret_name: args.first }) do
-          if args.empty?
-            logger.info 'Fetching secrets...'
-            K8SSecret.all.each do |secret|
-              logger.info "Saving secret #{secret.name}..."
-              cryptopus_adapter.save_secret(secret)
-              log_success "Saved secret #{secret.name} in Cryptopus"
-            end
-          elsif args.length == 1
-            logger.info "Saving secret #{args.first}..."
-            cryptopus_adapter.save_secret(K8SSecret.find_by_name(args.first))
-            log_success "Saved secret #{args.first} in Cryptopus"
-          end
-        end
-      end
-    end
-
-    command :'k8s-secret-push' do |c|
-      c.syntax = 'cry k8s-secret-push <secret-name>'
-      c.summary = 'Pushes secret from Cryptopus to Kubectl'
-      c.description = 'Pushes the Secret to Kubectl by retrieving it from Cryptopus first. ' \
-                      'If a Secret in the selected Kubectl project using the name ' \
-                      'of the given name is already present, it will be updated accordingly.'
-
-      c.action do |args|
-        secret_name = args.first
-        exit_with_error(:usage_error, 'Only one secret can be pushed') if args.length > 1
-        execute_action({ secret_name: secret_name }) do
-          secret_encryptables = if secret_name.nil?
-                              logger.info 'Fetching all encryptables in folder...'
-                              session_adapter.selected_folder.encryptables
-                            else
-                              logger.info "Fetching encryptable #{secret_name}..."
-                              [cryptopus_adapter.find_encryptable_by_name(secret_name)]
-                            end
-          secret_encryptables.each do |encryptable|
-            secret_encryptable = Encryptable.find(encryptable.id)
-            logger.info "Inserting secret #{encryptable.name}..."
-            k8s_adapter.insert_secret(secret_encryptable.to_osesecret)
-            log_success "Secret #{secret_encryptable.name} was successfully applied"
-          end
-        end
-      end
-    end
-
     command :teams do |c|
       c.syntax = 'cry teams'
       c.description = 'Lists all available teams'
@@ -255,18 +136,7 @@ class CLI
     exit_with_error(:usage_error, 'Could not connect')
   rescue NoFolderSelectedError
     exit_with_error(:usage_error, 'Folder must be selected using cry folder <id>')
-  rescue OpenshiftClientMissingError
-    exit_with_error(:usage_error, 'oc is not installed')
-  rescue OpenshiftClientNotLoggedInError
-    exit_with_error(:usage_error, 'oc is not logged in')
-  rescue KubernetesClientMissingError
-    exit_with_error(:usage_error, 'kubectl is not installed')
-  rescue KubernetesClientNotLoggedInError
-    exit_with_error(:usage_error, 'kubectl is not logged in')
   rescue CryptopusEncryptableNotFoundError
-    exit_with_error(:usage_error, 'Secret with the given name ' \
-                                  "#{options[:secret_name]} was not found")
-  rescue OpenshiftSecretNotFoundError
     exit_with_error(:usage_error, 'Secret with the given name ' \
                                   "#{options[:secret_name]} was not found")
   rescue TeamNotFoundError
@@ -316,20 +186,12 @@ class CLI
     @logger ||= TTY::Logger.new
   end
 
-  def ose_adapter
-    @ose_adapter ||= OSEAdapter.new
-  end
-
   def cryptopus_adapter
     @cryptopus_adapter ||= CryptopusAdapter.new
   end
 
   def session_adapter
     @session_adapter ||= SessionAdapter.new
-  end
-
-  def k8s_adapter
-    @k8s_adapter ||= K8SAdapter.new
   end
 
   def renew_auth_token

@@ -12,21 +12,6 @@ end
 class ForbiddenError < Error
 end
 
-class OpenshiftClientMissingError < Error
-end
-
-class OpenshiftClientNotLoggedInError < Error
-end
-
-class KubernetesClientMissingError < Error
-end
-
-class KubernetesClientNotLoggedInError < Error
-end
-
-class OpenshiftSecretNotFoundError < Error
-end
-
 class NoFolderSelectedError < Error
 end
 
