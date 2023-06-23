@@ -22,7 +22,7 @@ This will install the `cry` command including its dependencies
 ```
   Command:           Summary:
 
-  encryptable            Fetches an encryptable by the given id
+  encryptable        Fetches an encryptable by the given id
   folder             Selects the Cryptopus folder by id
   help               Display global or [command] help documentation
   login              Logs in to the ccli
@@ -61,12 +61,6 @@ PASSWORD=$(cry encryptable 42 --password)
 #### Updating
 
 not supported yet by ccli
-
-### Kubernetes/Openshift
-
-#### Required tools
-
-First you'll have to install either [oc](https://docs.openshift.com/container-platform/4.3/cli_reference/openshift_cli/getting-started-cli.html#installing-the-cli) or [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) depending on your usage
 
 ## Development
 
