@@ -33,18 +33,6 @@ class CryptopusAdapter
     send_request(request, uri)
   end
 
-  def save_secret(secret)
-    secret_encryptable = secret.to_encryptable
-    secret_encryptable.folder = session_adapter.selected_folder.id
-    persisted_secret = Encryptable.find_by_name_and_folder_id(secret.name,
-                                                              session_adapter.selected_folder.id)
-    if persisted_secret
-      patch("encryptables/#{persisted_secret.id}", secret_encryptable.to_json)
-    else
-      post('encryptables', secret_encryptable.to_json)
-    end
-  end
-
   def find_encryptable_by_name(name)
     secret_encryptable = Encryptable.find_by_name_and_folder_id(name, session_adapter.selected_folder.id)
 

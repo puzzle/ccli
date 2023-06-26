@@ -16,8 +16,7 @@ class Folder
       included = json[:included] || []
       name = json[:data][:attributes][:name]
       encryptables = included.map do |record|
-        Encryptable.from_json(record.to_json) if %w[encryptable_ose_secrets
-                                                encryptable_credentials].include? record[:type]
+        Encryptable.from_json(record.to_json) if %w[encryptable_credentials].include? record[:type]
       end.compact
       Folder.new(id: id, name: name, encryptables: encryptables)
     end

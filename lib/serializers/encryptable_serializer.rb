@@ -15,7 +15,6 @@ class EncryptableSerializer
             type: encryptable.type,
             cleartext_username: encryptable.username,
             cleartext_password: encryptable.password,
-            cleartext_ose_secret: encryptable.ose_secret
           },
           relationships: {
             folder: {
@@ -45,13 +44,8 @@ class EncryptableSerializer
       Encryptable.new(name: attributes[:name],
                       username: attributes[:cleartext_username],
                       password: attributes[:cleartext_password],
-                      ose_secret: attributes[:ose_secret],
                       type: attributes[:type],
                       id: data[:id])
-    end
-
-    def to_osesecret(account)
-      OSESecret.from_yaml(account.ose_secret)
     end
   end
 end

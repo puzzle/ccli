@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2
+- Remove Encryptable::OSESecret and support for Openshift/k8s Secrets like in Cryptopus 5.0 
+
 ## 1.1.0
 
 - Rename Account to Encryptable to support Cryptopus > 4.2
