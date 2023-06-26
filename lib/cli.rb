@@ -15,7 +15,7 @@ class CLI
   def run
     program :name, 'cry - cryptopus cli'
     program :version, '1.1.0'
-    program :description, 'CLI tool to read encryptables via Cryptopus'
+    program :description, 'Command Line Client for Cryptopus'
     program :help, 'Source Code', 'https://www.github.com/puzzle/ccli'
     program :help, 'Usage', 'cry [flags]'
 
