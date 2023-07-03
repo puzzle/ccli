@@ -54,6 +54,10 @@ class CLI
       c.description = 'Fetches an encryptable by the given id'
       c.option '--username', String, 'Only show the username of the user'
       c.option '--password', String, 'Only show the password of the user'
+      c.option '--pin', String, 'Only show the Pin of the user'
+      c.option '--token', String, 'Only show the Token of the user'
+      c.option '--email', String, 'Only show the Email of the user'
+      c.option '--customAttribute', String, 'Only show the Custom Attribute of the user'
 
       c.action do |args, options|
         exit_with_error(:usage_error, 'id missing') if args.empty?
@@ -62,6 +66,10 @@ class CLI
           encryptable = Encryptable.find(args.first)
           out = encryptable.username if options.username
           out = encryptable.password if options.password
+          out = encryptable.pin if options.pin
+          out = encryptable.token if options.token
+          out = encryptable.email if options.email
+          out = encryptable.customAttr if options.customAttribute
           puts out || encryptable.to_yaml
         end
       end
