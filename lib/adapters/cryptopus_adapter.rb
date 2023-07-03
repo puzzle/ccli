@@ -34,7 +34,10 @@ class CryptopusAdapter
   end
 
   def find_encryptable_by_name(name)
-    secret_encryptable = Encryptable.find_by_name_and_folder_id(name, session_adapter.selected_folder.id)
+    secret_encryptable = Encryptable.find_by_name_and_folder_id(
+      name,
+      session_adapter.selected_folder.id
+    )
 
     raise CryptopusEncryptableNotFoundError unless secret_encryptable
 

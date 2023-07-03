@@ -7,11 +7,10 @@ require 'tty-logger'
 
 Dir[File.join(__dir__, '**', '*.rb')].sort.each { |file| require file }
 
-# rubocop:disable Metrics/ClassLength
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
   def run
     program :name, 'cry - cryptopus cli'
     program :version, '1.1.0'
@@ -154,7 +153,7 @@ class CLI
     exit_with_error(:usage_error, 'Folder with the given name ' \
                                   "#{options[:folder_name]} was not found")
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
 
 
   def extract_login_args(args)
@@ -206,6 +205,5 @@ class CLI
     session_adapter.update_session({ token: cryptopus_adapter.renewed_auth_token })
   end
 end
-# rubocop:enable Metrics/ClassLength
 
 CLI.new.run if $PROGRAM_NAME == __FILE__

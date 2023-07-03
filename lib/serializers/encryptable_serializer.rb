@@ -18,7 +18,7 @@ class EncryptableSerializer
             cleartext_pin: encryptable.pin,
             cleartext_token: encryptable.token,
             cleartext_email: encryptable.email,
-            cleartext_custom_attr: encryptable.custom_attr,
+            cleartext_custom_attr: encryptable.custom_attr
           },
           relationships: {
             folder: {
@@ -49,14 +49,10 @@ class EncryptableSerializer
       json = JSON.parse(json, symbolize_names: true)
       data = json[:data] || json
       attributes = data[:attributes]
-      Encryptable.new(name: attributes[:name],
-                      username: attributes[:cleartext_username],
-                      password: attributes[:cleartext_password],
-                      pin: attributes[:cleartext_pin],
-                      token: attributes[:cleartext_token],
-                      email: attributes[:cleartext_email],
-                      custom_attr: attributes[:cleartext_custom_attr],
-                      type: attributes[:type],
+      Encryptable.new(name: attributes[:name], username: attributes[:cleartext_username],
+                      password: attributes[:cleartext_password], pin: attributes[:cleartext_pin],
+                      token: attributes[:cleartext_token], email: attributes[:cleartext_email],
+                      custom_attr: attributes[:cleartext_custom_attr], type: attributes[:type],
                       id: data[:id])
     end
   end

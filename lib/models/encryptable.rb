@@ -4,18 +4,16 @@ class Encryptable
   attr_reader :id, :name, :username, :password, :pin, :token, :email, :custom_attr, :type
   attr_accessor :folder
 
-  def initialize(name: nil, username: nil, password: nil,
-                 pin: nil, token: nil, email: nil, custom_attr: nil,
-                 type: nil, id: nil)
-    @id = id
-    @name = name
-    @username = username
-    @password = password
-    @pin = pin
-    @token = token
-    @email = email
-    @custom_attr = custom_attr
-    @type = type || 'credentials'
+  def initialize(params = {})
+    @id = params[:id]
+    @name = params[:name]
+    @username = params[:username]
+    @password = params[:password]
+    @pin = params[:pin]
+    @token = params[:token]
+    @email = params[:email]
+    @custom_attr = params[:custom_attr]
+    @type = params[:type] || 'credentials'
   end
 
   def to_json(*_args)
