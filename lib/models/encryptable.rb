@@ -1,16 +1,19 @@
 # frozen_string_literal: true
 
 class Encryptable
-  attr_reader :id, :name, :username, :password, :type
+  attr_reader :id, :name, :username, :password, :pin, :token, :email, :custom_attr, :type
   attr_accessor :folder
 
-  def initialize(name: nil, username: nil, password: nil,
-                 type: nil, id: nil)
-    @id = id
-    @name = name
-    @username = username
-    @password = password
-    @type = type || 'credentials'
+  def initialize(params = {})
+    @id = params[:id]
+    @name = params[:name]
+    @username = params[:username]
+    @password = params[:password]
+    @pin = params[:pin]
+    @token = params[:token]
+    @email = params[:email]
+    @custom_attr = params[:custom_attr]
+    @type = params[:type] || 'credentials'
   end
 
   def to_json(*_args)

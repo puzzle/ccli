@@ -32,6 +32,10 @@ describe CryptopusAdapter do
             name: 'spec_encryptable',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_encryptable',
+            cleartext_pin: '1234',
+            cleartext_token: 'xcFT',
+            cleartext_email: 'test@test.com',
+            cleartext_custom_attr: 'wow',
             type: 'credentials'
           }
         }
@@ -52,6 +56,10 @@ describe CryptopusAdapter do
       expect(attrs[:name]).to eq('spec_encryptable')
       expect(attrs[:cleartext_username]).to eq('ccli_encryptable')
       expect(attrs[:cleartext_password]).to eq('gfClNjq21D')
+      expect(attrs[:cleartext_pin]).to eq('1234')
+      expect(attrs[:cleartext_token]).to eq('xcFT')
+      expect(attrs[:cleartext_email]).to eq('test@test.com')
+      expect(attrs[:cleartext_custom_attr]).to eq('wow')
       expect(attrs[:type]).to eq('credentials')
     end
     
@@ -126,6 +134,10 @@ describe CryptopusAdapter do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
+            cleartext_pin: '1234',
+            cleartext_token: 'xcFT',
+            cleartext_email: 'test@test.com',
+            cleartext_custom_attr: 'wow',
             type: 'credentials'
           }
         }
@@ -217,6 +229,10 @@ describe CryptopusAdapter do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
+            cleartext_pin: '1234',
+            cleartext_token: 'xcFT',
+            cleartext_email: 'test@test.com',
+            cleartext_custom_attr: 'wow',
             type: 'credentials'
           }
         }

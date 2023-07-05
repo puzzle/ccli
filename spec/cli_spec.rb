@@ -126,6 +126,10 @@ describe CLI do
             accountname: 'spec_account',
             cleartext_password: 'gfClNjq21D',
             cleartext_username: 'ccli_account',
+            cleartext_pin: '1234',
+            cleartext_token: 'xcFT',
+            cleartext_email: 'test@test.com',
+            cleartext_custom_attr: 'wow',
             type: 'credentials'
           }
         }
@@ -136,7 +140,7 @@ describe CLI do
 
 
       expect{ subject.run }
-        .to output(/id: 1\naccountname: spec_account\nusername: ccli_account\npassword: gfClNjq21D\ntype: credentials/)
+        .to output(/id: 1\naccountname: spec_account\nusername: ccli_account\npassword: gfClNjq21D\npin: 1234\ntoken: xcFT\nemail: test@test.com\ncustom_attribute: wow\ntype: credentials/)
         .to_stdout
     end
 
@@ -186,6 +190,98 @@ describe CLI do
       expect{ subject.run }
         .to output(/gfClNjq21D/)
         .to_stdout
+    end
+
+    it 'exits successfully and showing only pin with flag' do
+      setup_session
+
+      set_command(:account, '1', '--pin')
+      json_response = {
+        data: {
+          id: 1,
+          attributes: {
+            accountname: 'spec_account',
+            cleartext_pin: '3819',
+            type: 'Account::Credentials'
+          }
+        }
+      }.to_json
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
+
+      expect{ subject.run }
+        .to output(/3819/)
+              .to_stdout
+    end
+
+    it 'exits successfully and showing only token with flag' do
+      setup_session
+
+      set_command(:account, '1', '--token')
+      json_response = {
+        data: {
+          id: 1,
+          attributes: {
+            accountname: 'spec_account',
+            cleartext_token: 'fdSDALwalS',
+            type: 'Account::Credentials'
+          }
+        }
+      }.to_json
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
+
+      expect{ subject.run }
+        .to output(/fdSDALwalS/)
+              .to_stdout
+    end
+
+    it 'exits successfully and showing only email with flag' do
+      setup_session
+
+      set_command(:account, '1', '--email')
+      json_response = {
+        data: {
+          id: 1,
+          attributes: {
+            accountname: 'spec_account',
+            cleartext_email: 'hallo@welcome.com',
+            type: 'Account::Credentials'
+          }
+        }
+      }.to_json
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
+
+      expect{ subject.run }
+        .to output(/hallo@welcome.com/)
+              .to_stdout
+    end
+
+    it 'exits successfully and showing only custom attribute with flag' do
+      setup_session
+
+      set_command(:account, '1', '--customAttribute')
+      json_response = {
+        data: {
+          id: 1,
+          attributes: {
+            accountname: 'spec_account',
+            cleartext_custom_attribute: 'this is my secret attribute hehehe',
+            type: 'Account::Credentials'
+          }
+        }
+      }.to_json
+      cryptopus_adapter = double
+      expect(CryptopusAdapter).to receive(:new).and_return(cryptopus_adapter)
+      expect(cryptopus_adapter).to receive(:get).and_return(json_response)
+
+      expect{ subject.run }
+        .to output(/this is my secret attribute hehehe/)
+              .to_stdout
     end
 
     it 'exits with usage error if session missing' do

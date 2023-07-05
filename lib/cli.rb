@@ -7,11 +7,10 @@ require 'tty-logger'
 
 Dir[File.join(__dir__, '**', '*.rb')].sort.each { |file| require file }
 
-# rubocop:disable Metrics/ClassLength
 class CLI
   include Commander::Methods
 
-  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+  # rubocop:disable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
   def run
     program :name, 'cry - cryptopus cli'
     program :version, '1.1.0'
@@ -54,6 +53,10 @@ class CLI
       c.description = 'Fetches an encryptable by the given id'
       c.option '--username', String, 'Only show the username of the user'
       c.option '--password', String, 'Only show the password of the user'
+      c.option '--pin', String, 'Only show the Pin of the user'
+      c.option '--token', String, 'Only show the Token of the user'
+      c.option '--email', String, 'Only show the Email of the user'
+      c.option '--customAttribute', String, 'Only show the Custom Attribute of the user'
 
       c.action do |args, options|
         exit_with_error(:usage_error, 'id missing') if args.empty?
@@ -62,6 +65,10 @@ class CLI
           encryptable = Encryptable.find(args.first)
           out = encryptable.username if options.username
           out = encryptable.password if options.password
+          out = encryptable.pin if options.pin
+          out = encryptable.token if options.token
+          out = encryptable.email if options.email
+          out = encryptable.customAttr if options.customAttribute
           puts out || encryptable.to_yaml
         end
       end
@@ -146,7 +153,7 @@ class CLI
     exit_with_error(:usage_error, 'Folder with the given name ' \
                                   "#{options[:folder_name]} was not found")
   end
-  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity, Metrics/BlockLength
+  # rubocop:enable Metrics/MethodLength, Metrics/AbcSize, Metric/CyclomaticComplexity, Metrics/PerceivedComplexity
 
 
   def extract_login_args(args)
@@ -198,6 +205,5 @@ class CLI
     session_adapter.update_session({ token: cryptopus_adapter.renewed_auth_token })
   end
 end
-# rubocop:enable Metrics/ClassLength
 
 CLI.new.run if $PROGRAM_NAME == __FILE__
